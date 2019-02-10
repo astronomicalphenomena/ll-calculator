@@ -40,3 +40,12 @@ Set decimal digits<br/>
 Load settings<br/>
 ### save
 Save settings<br/>
+## MATH ERROR
+### MATH ERROR 0
+**Factorial number is not a natural number**
+### MATH ERROR 1
+**Not both modulo operands are integers**
+### MATH ERROR 2
+**The radicand is negative**
+### MATH ERROR 3
+**Found other operators**

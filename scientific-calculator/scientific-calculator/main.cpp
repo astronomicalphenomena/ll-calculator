@@ -274,11 +274,10 @@ void ExpanseFunction(string &expression, const string &function_name, const stri
 			pos++;
 		}
 		expression.erase(last_replaced_pos, pos - last_replaced_pos);
-		string::size_type replaced_pos = first_replaced_pos;
 		for (int i = 0; i < parameter_count; i++)
-			for (first_replaced_pos = replaced_pos; first_replaced_pos < last_replaced_pos; first_replaced_pos++)
-				if (expression[first_replaced_pos] == parameter_name[i])
-					expression.replace(first_replaced_pos, 1, parameter_expression[i]);
+			for (pos = first_replaced_pos; pos < last_replaced_pos; pos++)
+				if (expression[pos] == parameter_name[i])
+					expression.replace(pos, 1, parameter_expression[i]);
 	}
 }
 string functions[32][2] = {};
@@ -389,6 +388,7 @@ int main()
 				string::size_type pos = 0;
 				for (; content[pos] != '('; pos++)
 					functions[functions_count][0] += content[pos];
+				functions[functions_count][0] += "(";
 				pos++;
 				string::size_type first_parameter_pos = pos;
 				for (; content[pos] != ')'; pos++)
@@ -409,7 +409,7 @@ int main()
 		else if (content == "showFunctions")
 		{
 			for (int i = 0; i < functions_count; i++)
-				cout << "Function " << functions_count << endl
+				cout << "Function " << i << endl
 				<< "Function Name:" << functions[i][0] << endl
 				<< "Parameter Number:" << parameter_count[i] << endl
 				<< "Parater Name:" << parameter_name[i] << endl
