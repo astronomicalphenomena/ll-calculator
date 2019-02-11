@@ -13,6 +13,7 @@
 using namespace std;
 const double _PI = 3.14159265358979323846;
 const double _E = 2.71828182845904523536;
+bool isTesting = false;
 int GetPriority(const string *str_operator)
 {
 	if (*str_operator == "+" || *str_operator == "-")
@@ -42,6 +43,14 @@ double Factorial(double n)
 		else
 			throw "MATH ERROR 0";
 	}
+}
+void PrintColorfully(string content, WORD wAttributes, bool isLine = false)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
+	cout << content;
+	if (isLine)
+		cout << endl;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 }
 void Calculate(string &expression, const bool &isRadian, double &answer)
 {
@@ -143,6 +152,15 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 		{
 			a_expression[a_expression_pointer] = operator_stack.pop();
 			a_expression_pointer++;
+		}
+		if (isTesting)
+		{
+			for (int i = 0; i < a_expression_pointer; i++)
+			{
+				PrintColorfully(*a_expression[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+				cout << " ";
+			}
+			cout << endl;
 		}
 		auto GetValue = [isRadian](double(*function_name)(double _X), double parameter)
 		{
@@ -250,12 +268,16 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 		}
 		answer = result.pop();
 		cout.setf(ios::fixed);
-		cout << "result=" << answer << endl << endl;;
+		PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+		cout << answer << endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 	}
 	catch (const char *ERROR_INFORMATION)
 	{
 		cout << endl;
-		cout << "ERROR:" << ERROR_INFORMATION << endl;
+		PrintColorfully("ERROR: ", FOREGROUND_RED);
+		PrintColorfully(ERROR_INFORMATION, FOREGROUND_GREEN, true);
 	}
 }
 void ExpanseFunction(string &expression, const string &function_name, const string &function_expression, int parameter_count, const char *parameter_name)
@@ -325,7 +347,7 @@ void LoadSettings()
 	for (int i = 0; i < 32; i++)
 	{
 		functions[i][0] = _functions[i][0].GetString();
-		functions[i][0] = _functions[i][1].GetString();
+		functions[i][1] = _functions[i][1].GetString();
 	}
 	const Value &_parameter_count = document["parameter_count"];
 	for (int i = 0; i < 32; i++)
@@ -391,8 +413,10 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 int main()
 {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
-	system("COLOR 02");
 	srand(time(NULL));
+	PrintColorfully("Welcome", FOREGROUND_RED | FOREGROUND_INTENSITY);
+	PrintColorfully(" to ", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+	PrintColorfully("Scientific Calculator", FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
 	string expression;
 	string content;
 	while (cin >> content)
@@ -406,7 +430,7 @@ int main()
 		else if (content == "function")
 		{
 			if (functions_count == 32)
-				cout << "The list of functions is full." << endl;
+				PrintColorfully("The list of functions is full", FOREGROUND_RED | FOREGROUND_GREEN, true);
 			else
 			{
 				cin >> content;
@@ -428,17 +452,25 @@ int main()
 				pos++;
 				for (; pos != content.size(); pos++)
 					functions[functions_count][1] += content[pos];
+				functions[functions_count][1] = "(" + functions[functions_count][1] + ")";
 				functions_count++;
 			}
 		}
 		else if (content == "showFunctions")
 		{
 			for (int i = 0; i < functions_count; i++)
-				cout << "Function " << i << endl
-				<< "Function Name:" << functions[i][0] << endl
-				<< "Parameter Number:" << parameter_count[i] << endl
-				<< "Parater Name:" << parameter_name[i] << endl
-				<< "Function Exprssion:" << functions[i][1] << endl;
+			{
+				PrintColorfully("Function: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(to_string(i), FOREGROUND_GREEN, true);
+				PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(functions[i][0], FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Number: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(to_string(parameter_count[i]), FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(parameter_name[i], FOREGROUND_GREEN, true);
+				PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(functions[i][1], FOREGROUND_GREEN, true);
+			}
 		}
 		else if (content == "deleteFunctions")
 			functions_count = 0;
@@ -446,7 +478,7 @@ int main()
 			break;
 		else if (content == "FIX")
 		{
-			cout << "FIX num?";
+			PrintColorfully("FIX number? ", FOREGROUND_RED | FOREGROUND_GREEN);
 			cin >> FIXnum;
 			cout << setprecision(FIXnum);
 		}
@@ -454,6 +486,8 @@ int main()
 			LoadSettings();
 		else if (content == "save")
 			SaveSettings();
+		else if (content == "test")
+			isTesting = true;
 		else
 		{
 			expression = content;
@@ -463,6 +497,8 @@ int main()
 			{
 				for (int i = 0; i < functions_count; i++)
 					ExpanseFunction(expression, functions[i][0], functions[i][1], parameter_count[i], parameter_name[i].c_str());
+				if (isTesting)
+					PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
 				Calculate(expression, isRadian, answer);
 			}
 		}
