@@ -203,6 +203,48 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 					result.push(answer);
 				else if (*a_expression[a_expression_pointer] == "rand#")
 					result.push(rand());
+				else if (*a_expression[a_expression_pointer] == "arcsin")
+				{
+					if (isRadian)
+						result.push(asin(result.pop()));
+					else
+						result.push(asin(result.pop()) * 180 / _PI);
+				}
+				else if (*a_expression[a_expression_pointer] == "arccos")
+				{
+					if (isRadian)
+						result.push(acos(result.pop()));
+					else
+						result.push(acos(result.pop()) * 180 / _PI);
+				}
+				else if (*a_expression[a_expression_pointer] == "arctan")
+				{
+					if (isRadian)
+						result.push(atan(result.pop()));
+					else
+						result.push(atan(result.pop()) * 180 / _PI);
+				}
+				else if (*a_expression[a_expression_pointer] == "arsinh")
+				{
+					if (isRadian)
+						result.push(asinh(result.pop()));
+					else
+						result.push(asinh(result.pop()) * 180 / _PI);
+				}
+				else if (*a_expression[a_expression_pointer] == "arcosh")
+				{
+					if (isRadian)
+						result.push(acosh(result.pop()));
+					else
+						result.push(acosh(result.pop()) * 180 / _PI);
+				}
+				else if (*a_expression[a_expression_pointer] == "artanh")
+				{
+					if (isRadian)
+						result.push(atanh(result.pop()));
+					else
+						result.push(atanh(result.pop()) * 180 / _PI);
+				}
 				else
 				{
 					double n = 0.0;
@@ -216,24 +258,12 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 						result.push(cos(n));
 					else if (*a_expression[a_expression_pointer] == "tan")
 						result.push(tan(n));
-					else if (*a_expression[a_expression_pointer] == "arcsin")
-						result.push(asin(n));
-					else if (*a_expression[a_expression_pointer] == "arccos")
-						result.push(acos(n));
-					else if (*a_expression[a_expression_pointer] == "arctan")
-						result.push(atan(n));
 					else if (*a_expression[a_expression_pointer] == "sinh")
 						result.push(sinh(n));
 					else if (*a_expression[a_expression_pointer] == "cosh")
 						result.push(cosh(n));
 					else if (*a_expression[a_expression_pointer] == "tanh")
 						result.push(tanh(n));
-					else if (*a_expression[a_expression_pointer] == "arsinh")
-						result.push(asinh(n));
-					else if (*a_expression[a_expression_pointer] == "arocsh")
-						result.push(acosh(n));
-					else if (*a_expression[a_expression_pointer] == "artanh")
-						result.push(atanh(n));
 					else
 						throw "MATH ERROR 3";
 				}
