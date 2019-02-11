@@ -125,7 +125,7 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 						break;
 					else
 					{
-						if (GetPriority(temp) >= GetPriority(operator_stack.GetTop()))
+						if (GetPriority(temp) > GetPriority(operator_stack.GetTop()))
 							break;
 						else
 						{
@@ -249,14 +249,14 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 			a_expression_pointer++;
 		}
 		answer = result.pop();
+		cout.setf(ios::fixed);
+		cout << "result=" << answer << endl << endl;;
 	}
 	catch (const char *ERROR_INFORMATION)
 	{
 		cout << endl;
 		cout << "ERROR:" << ERROR_INFORMATION << endl;
 	}
-	cout.setf(ios::fixed);
-	cout << "result=" << answer << endl;
 }
 void ExpanseFunction(string &expression, const string &function_name, const string &function_expression, int parameter_count, const char *parameter_name)
 {
@@ -270,21 +270,39 @@ void ExpanseFunction(string &expression, const string &function_name, const stri
 		string *parameter_expression = new string[parameter_count];
 		for (int i = 0; i < parameter_count; i++)
 		{
+			Stack<char> left_parenthesis;
 			while (true)
 			{
-				if (expression[pos] != ',' && expression[pos] != ')')
+				if (expression[pos] == '(')
+				{
 					parameter_expression[i] += expression[pos];
-				else
+					left_parenthesis.push('L');
+				}
+				else if (expression[pos] == ')' && !left_parenthesis.empty())
+				{
+					parameter_expression[i] += expression[pos];
+					left_parenthesis.pop();
+				}
+				else if ((expression[pos] == ')' || expression[pos] == ',') && left_parenthesis.empty())
 					break;
+				else
+					parameter_expression[i] += expression[pos];
 				pos++;
 			}
 			pos++;
 		}
 		expression.erase(last_replaced_pos, pos - last_replaced_pos);
 		for (int i = 0; i < parameter_count; i++)
-			for (pos = first_replaced_pos; pos < last_replaced_pos; pos++)
+		{
+			for (pos = first_replaced_pos; pos <= last_replaced_pos; pos++)
+			{
 				if (expression[pos] == parameter_name[i])
+				{
 					expression.replace(pos, 1, parameter_expression[i]);
+					last_replaced_pos += parameter_expression[i].size() - 1;
+				}
+			}
+		}
 	}
 }
 string functions[32][2] = {};
@@ -403,7 +421,7 @@ int main()
 						parameter_count[functions_count]++;
 				parameter_count[functions_count]++;
 				for (; first_parameter_pos != pos; first_parameter_pos++)
-					if ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z')
+					if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
 						parameter_name[functions_count] += content[first_parameter_pos];
 				while (content[pos] != '=')
 					pos++;
