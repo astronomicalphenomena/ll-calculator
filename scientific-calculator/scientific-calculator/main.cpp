@@ -144,6 +144,13 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 			a_expression[a_expression_pointer] = operator_stack.pop();
 			a_expression_pointer++;
 		}
+		auto GetValue = [isRadian](double(*function_name)(double _X), double parameter)
+		{
+			if (isRadian)
+				return function_name(parameter);
+			else
+				return function_name(parameter) * 180 / _PI;
+		};
 		Stack<double> result;
 		a_expression_pointer = 0;
 		while (a_expression[a_expression_pointer] != nullptr)
@@ -204,47 +211,17 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 				else if (*a_expression[a_expression_pointer] == "rand#")
 					result.push(rand());
 				else if (*a_expression[a_expression_pointer] == "arcsin")
-				{
-					if (isRadian)
-						result.push(asin(result.pop()));
-					else
-						result.push(asin(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(asin, result.pop()));
 				else if (*a_expression[a_expression_pointer] == "arccos")
-				{
-					if (isRadian)
-						result.push(acos(result.pop()));
-					else
-						result.push(acos(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(acos, result.pop()));
 				else if (*a_expression[a_expression_pointer] == "arctan")
-				{
-					if (isRadian)
-						result.push(atan(result.pop()));
-					else
-						result.push(atan(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(atan, result.pop()));
 				else if (*a_expression[a_expression_pointer] == "arsinh")
-				{
-					if (isRadian)
-						result.push(asinh(result.pop()));
-					else
-						result.push(asinh(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(asinh, result.pop()));
 				else if (*a_expression[a_expression_pointer] == "arcosh")
-				{
-					if (isRadian)
-						result.push(acosh(result.pop()));
-					else
-						result.push(acosh(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(acosh, result.pop()));
 				else if (*a_expression[a_expression_pointer] == "artanh")
-				{
-					if (isRadian)
-						result.push(atanh(result.pop()));
-					else
-						result.push(atanh(result.pop()) * 180 / _PI);
-				}
+					result.push(GetValue(atanh, result.pop()));
 				else
 				{
 					double n = 0.0;
