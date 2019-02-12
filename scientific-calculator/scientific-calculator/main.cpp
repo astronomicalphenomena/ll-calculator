@@ -185,7 +185,9 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 		};
 		Stack<double> result;
 		a_expression_pointer = 0;
-		if (!('0' <= (*a_expression[a_expression_pointer])[0] && (*a_expression[a_expression_pointer])[0] <= '9'))
+		if (a_expression[a_expression_pointer] == nullptr)
+			throw "no operand";
+		else if (!('0' <= (*a_expression[a_expression_pointer])[0] && (*a_expression[a_expression_pointer])[0] <= '9'))
 			throw "unknown error";
 		while (a_expression[a_expression_pointer] != nullptr)
 		{
