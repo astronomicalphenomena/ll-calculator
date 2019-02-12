@@ -325,6 +325,7 @@ void ExpanseFunction(string &expression, const string &function_name, const stri
 				}
 			}
 		}
+		pos = first_replaced_pos;
 	}
 }
 string functions[32][2] = {};
