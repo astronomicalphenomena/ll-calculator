@@ -121,9 +121,14 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 				*temp = "*";
 				temp_character--;
 			}
-			else if (*temp == "%" && temp_character != expression.end())
-				if (!('0' <= *(temp_character + 1) && *(temp_character + 1) <= '9'))
+			else if (*temp == "%")
+			{
+				if (temp_character == expression.end() - 1)
 					*temp = "%%";
+				else
+					if (!('0' <= *(temp_character + 1) && *(temp_character + 1) <= '9'))
+						*temp = "%%";
+			}
 			while (true)
 			{
 				if (operator_stack.empty())
