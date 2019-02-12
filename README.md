@@ -12,40 +12,34 @@ abs()
 ## User-defined function
 ### Create
 You can enter this instruction to create your function.<br/>
-**function**<br/>
-if it outputs "**The list of functions is full.**" then you can't continue to create up to 32 functions.<br/>
-Then enter the function expression to save your function.<br/>
+**-f**<br/>
+If it outputs "**The list of functions is full.**" then you can't continue to create functions.<br/>
+If it not then enter the function expression to save your function.<br/>
 Format:**functionName(parameterName1,parameterName2...)=expression**<br/>
+(e.g.):**add(x,y)=x+y**
 ### Delete
 You enter this instruction to delete your function.<br/>
-**deleteFunctions**<br/>
+**-df**<br/>
 ### Show
-You enter this instruction to show your function.<br/>
-**showFunctions**<br/>
+You enter this instruction to show your functions.<br/>
+**-sf**<br/>
 ## Operands
 This program provides 2 constants and 2 variable.<br/>
 **pi e ans rand#**<br/>
 ## Other instructions
-### Rad
+### -rad
 Calculate in radian<br/>
-### Deg
+### -reg
 Calculate in degree<br/>
-### restart
-Do the last step<br/>
-### exit
+### -exit
 Close program<br/>
-### FIX
+### -fix
 Set decimal digits<br/>
-### load
+### -load
 Load settings<br/>
-### save
+### -save
 Save settings<br/>
-## MATH ERROR
-### MATH ERROR 0
-**Factorial number is not a natural number**
-### MATH ERROR 1
-**Not both modulo operands are integers**
-### MATH ERROR 2
-**The radicand is negative**
-### MATH ERROR 3
-**Found other operators**
+### -test
+Print (Expression and) Reverse Polish Notation<br/>
+### =
+Do the last step<br/>
