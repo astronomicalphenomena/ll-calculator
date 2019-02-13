@@ -52,7 +52,7 @@ void PrintColorfully(string content, WORD wAttributes, bool isLine = false)
 		cout << endl;
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 }
-void Calculate(string &expression, const bool &isRadian, double &answer)
+bool Calculate(string &expression, const bool &isRadian, double &answer)
 {
 	try
 	{
@@ -62,7 +62,7 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 		int operand_count = 0;
 		int operator_count = 1;
 		string *temp = nullptr;
-		for (string::iterator temp_character = expression.begin(); temp_character != expression.end(); temp_character++)
+		for (string::iterator temp_character = expression.begin(); temp_character < expression.end(); temp_character++)
 		{
 			temp = new string;
 			if ('0' <= *temp_character && *temp_character <= '9')
@@ -183,122 +183,132 @@ void Calculate(string &expression, const bool &isRadian, double &answer)
 			else
 				return function_name(parameter) * 180 / _PI;
 		};
+		if (a_expression[0] == nullptr)
+			throw "no operand";
+		else if (!('0' <= (*a_expression[0])[0] && (*a_expression[0])[0] <= '9'))
+		{
+			if (*a_expression[0] != "pi" && *a_expression[0] != "e" && *a_expression[0] != "ans" && *a_expression[0] != "rand#")
+				throw "unknown error";
+		}
 		Stack<double> result;
 		a_expression_pointer = 0;
-		if (a_expression[a_expression_pointer] == nullptr)
-			throw "no operand";
-		else if (!('0' <= (*a_expression[a_expression_pointer])[0] && (*a_expression[a_expression_pointer])[0] <= '9'))
-			throw "unknown error";
 		while (a_expression[a_expression_pointer] != nullptr)
 		{
 			if ('0' <= (*a_expression[a_expression_pointer])[0] && (*a_expression[a_expression_pointer])[0] <= '9')
 				result.push(stod(*a_expression[a_expression_pointer]));
 			else
 			{
-				if (*a_expression[a_expression_pointer] == "+")
-					result.push(result.pop() + result.pop());
-				else if (*a_expression[a_expression_pointer] == "-")
-					result.push(0.0 - result.pop() + result.pop());
-				else if (*a_expression[a_expression_pointer] == "--")
-					result.push(0.0 - result.pop());
-				else if (*a_expression[a_expression_pointer] == "*")
-					result.push(result.pop() * result.pop());
-				else if (*a_expression[a_expression_pointer] == "/")
-					result.push(1.0 / result.pop() * result.pop());
-				else if (*a_expression[a_expression_pointer] == "!")
-					result.push(Factorial(result.pop()));
-				else if (*a_expression[a_expression_pointer] == "%")
+				try
 				{
-					double B = result.pop();
-					double A = result.pop();
-					if (A - (int)A == 0 && B - (int)B == 0)
-						result.push((int)A % (int)B);
-					else
-						throw "[A%B] A or B non integers";
-				}
-				else if (*a_expression[a_expression_pointer] == "%%")
-					result.push(result.pop() / 100.0);
-				else if (*a_expression[a_expression_pointer] == "^")
-				{
-					double B = result.pop();
-					double A = result.pop();
-					result.push(pow(A, B));
-				}
-				else if (*a_expression[a_expression_pointer] == "log")
-					result.push(1.0 / log(result.pop()) * log(result.pop()));
-				else if (*a_expression[a_expression_pointer] == "lg")
-					result.push(log10(result.pop()));
-				else if (*a_expression[a_expression_pointer] == "ln")
-					result.push(log(result.pop()));
-				else if (*a_expression[a_expression_pointer] == "sqrt")
-				{
-					if (result.GetTop() < 0)
-						throw "[sqrt(N)] N is negative";
-					result.push(sqrt(result.pop()));
-				}
-				else if (*a_expression[a_expression_pointer] == "abs")
-					result.push(abs(result.pop()));
-				else if (*a_expression[a_expression_pointer] == "pi")
-					result.push(_PI);
-				else if (*a_expression[a_expression_pointer] == "e")
-					result.push(_E);
-				else if (*a_expression[a_expression_pointer] == "ans")
-					result.push(answer);
-				else if (*a_expression[a_expression_pointer] == "rand#")
-					result.push(rand());
-				else if (*a_expression[a_expression_pointer] == "arcsin")
-					result.push(GetValue(asin, result.pop()));
-				else if (*a_expression[a_expression_pointer] == "arccos")
-					result.push(GetValue(acos, result.pop()));
-				else if (*a_expression[a_expression_pointer] == "arctan")
-					result.push(GetValue(atan, result.pop()));
-				else if (*a_expression[a_expression_pointer] == "arsinh")
-					result.push(GetValue(asinh, result.pop()));
-				else if (*a_expression[a_expression_pointer] == "arcosh")
-					result.push(GetValue(acosh, result.pop()));
-				else if (*a_expression[a_expression_pointer] == "artanh")
-					result.push(GetValue(atanh, result.pop()));
-				else
-				{
-					double n = 0.0;
-					if (isRadian == true)
-						n = result.pop();
-					else
-						n = result.pop() * _PI / 180.0;
-					if (*a_expression[a_expression_pointer] == "sin")
-						result.push(sin(n));
-					else if (*a_expression[a_expression_pointer] == "cos")
-						result.push(cos(n));
-					else if (*a_expression[a_expression_pointer] == "tan")
-						result.push(tan(n));
-					else if (*a_expression[a_expression_pointer] == "sinh")
-						result.push(sinh(n));
-					else if (*a_expression[a_expression_pointer] == "cosh")
-						result.push(cosh(n));
-					else if (*a_expression[a_expression_pointer] == "tanh")
-						result.push(tanh(n));
+					if (*a_expression[a_expression_pointer] == "+")
+						result.push(result.pop() + result.pop());
+					else if (*a_expression[a_expression_pointer] == "-")
+						result.push(0.0 - result.pop() + result.pop());
+					else if (*a_expression[a_expression_pointer] == "--")
+						result.push(0.0 - result.pop());
+					else if (*a_expression[a_expression_pointer] == "*")
+						result.push(result.pop() * result.pop());
+					else if (*a_expression[a_expression_pointer] == "/")
+						result.push(1.0 / result.pop() * result.pop());
+					else if (*a_expression[a_expression_pointer] == "!")
+						result.push(Factorial(result.pop()));
+					else if (*a_expression[a_expression_pointer] == "%")
+					{
+						double B = result.pop();
+						double A = result.pop();
+						if (A - (int)A == 0 && B - (int)B == 0)
+							result.push((int)A % (int)B);
+						else
+							throw "[A%B] A or B non integers";
+					}
+					else if (*a_expression[a_expression_pointer] == "%%")
+						result.push(result.pop() / 100.0);
+					else if (*a_expression[a_expression_pointer] == "^")
+					{
+						double B = result.pop();
+						double A = result.pop();
+						result.push(pow(A, B));
+					}
+					else if (*a_expression[a_expression_pointer] == "log")
+						result.push(1.0 / log(result.pop()) * log(result.pop()));
+					else if (*a_expression[a_expression_pointer] == "lg")
+						result.push(log10(result.pop()));
+					else if (*a_expression[a_expression_pointer] == "ln")
+						result.push(log(result.pop()));
+					else if (*a_expression[a_expression_pointer] == "sqrt")
+					{
+						if (result.GetTop() < 0)
+							throw "[sqrt(N)] N is negative";
+						result.push(sqrt(result.pop()));
+					}
+					else if (*a_expression[a_expression_pointer] == "abs")
+						result.push(abs(result.pop()));
+					else if (*a_expression[a_expression_pointer] == "pi")
+						result.push(_PI);
+					else if (*a_expression[a_expression_pointer] == "e")
+						result.push(_E);
+					else if (*a_expression[a_expression_pointer] == "ans")
+						result.push(answer);
+					else if (*a_expression[a_expression_pointer] == "rand#")
+						result.push(rand());
+					else if (*a_expression[a_expression_pointer] == "arcsin")
+						result.push(GetValue(asin, result.pop()));
+					else if (*a_expression[a_expression_pointer] == "arccos")
+						result.push(GetValue(acos, result.pop()));
+					else if (*a_expression[a_expression_pointer] == "arctan")
+						result.push(GetValue(atan, result.pop()));
+					else if (*a_expression[a_expression_pointer] == "arsinh")
+						result.push(GetValue(asinh, result.pop()));
+					else if (*a_expression[a_expression_pointer] == "arcosh")
+						result.push(GetValue(acosh, result.pop()));
+					else if (*a_expression[a_expression_pointer] == "artanh")
+						result.push(GetValue(atanh, result.pop()));
 					else
 					{
-						*a_expression[a_expression_pointer] = "unknown operator: " + *a_expression[a_expression_pointer];
-						throw a_expression[a_expression_pointer]->c_str();
+						double n = 0.0;
+						if (isRadian == true)
+							n = result.pop();
+						else
+							n = result.pop() * _PI / 180.0;
+						if (*a_expression[a_expression_pointer] == "sin")
+							result.push(sin(n));
+						else if (*a_expression[a_expression_pointer] == "cos")
+							result.push(cos(n));
+						else if (*a_expression[a_expression_pointer] == "tan")
+							result.push(tan(n));
+						else if (*a_expression[a_expression_pointer] == "sinh")
+							result.push(sinh(n));
+						else if (*a_expression[a_expression_pointer] == "cosh")
+							result.push(cosh(n));
+						else if (*a_expression[a_expression_pointer] == "tanh")
+							result.push(tanh(n));
+						else
+						{
+							*a_expression[a_expression_pointer] = "unknown operator: " + *a_expression[a_expression_pointer];
+							throw a_expression[a_expression_pointer]->c_str();
+						}
 					}
+				}
+				catch (const char *ERROR_INFORMATION)
+				{
+					if (ERROR_INFORMATION == "Stack is Empty")
+						throw "missing operand";
+					else
+						throw ERROR_INFORMATION;
 				}
 			}
 			delete a_expression[a_expression_pointer];
 			a_expression_pointer++;
 		}
 		answer = result.pop();
-		cout.setf(ios::fixed);
-		PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
-		cout << answer << endl;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		return true;
 	}
 	catch (const char *ERROR_INFORMATION)
 	{
 		cout << endl;
 		PrintColorfully("ERROR: ", FOREGROUND_RED);
 		PrintColorfully(ERROR_INFORMATION, FOREGROUND_GREEN, true);
+		return false;
 	}
 }
 struct function
@@ -549,8 +559,9 @@ int main()
 			else
 			{
 				expression = content;
+				bool isCalculateSuccessfully;
 				if (created_count == 0)
-					Calculate(expression, isRadian, answer);
+					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				else
 				{
 					for (int i = 0; i < MAX_FUNCTIONS_COUNT; i++)
@@ -560,7 +571,13 @@ int main()
 					}
 					if (isTesting)
 						PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
-					Calculate(expression, isRadian, answer);
+					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
+				}
+				if (isCalculateSuccessfully)
+				{
+					cout.setf(ios::fixed);
+					PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
+					PrintColorfully(to_string(answer), FOREGROUND_GREEN, true);
 				}
 			}
 		}

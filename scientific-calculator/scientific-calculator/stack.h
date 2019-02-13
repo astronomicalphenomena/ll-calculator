@@ -6,50 +6,54 @@ private:
 	struct node
 	{
 		T data;
-		node *next = nullptr;
+		node *last = nullptr;
 	};
-	node *_top;
-	bool _isEmpty = true;
+	node *top;
+	bool isEmpty = true;
 
 public:
 	bool empty()
 	{
-		return _isEmpty;
+		return isEmpty;
 	}
 	void push(T data)
 	{
-		if (_isEmpty)
+		if (isEmpty)
 		{
-			_top = new node;
-			_top->data = data;
-			_isEmpty = false;
+			top = new node;
+			top->data = data;
+			isEmpty = false;
 		}
 		else
 		{
-			node *temp = _top;
-			_top = new node;
-			_top->data = data;
-			_top->next = temp;
+			node *temp = top;
+			top = new node;
+			top->data = data;
+			top->last = temp;
 		}
 	}
 	T GetTop()
 	{
-		return _top->data;
+		if (isEmpty)
+			throw "Stack is Empty";
+		return top->data;
 	}
 	T pop()
 	{
-		if (_top->next == nullptr)
+		if (isEmpty)
+			throw "Stack is Empty";
+		if (top->last == nullptr)
 		{
-			T data = _top->data;
-			delete _top;
-			_isEmpty = true;
+			T data = top->data;
+			delete top;
+			isEmpty = true;
 			return data;
 		}
 		else
 		{
-			T data = _top->data;
-			node *temp = _top;
-			_top = _top->next;
+			T data = top->data;
+			node *temp = top;
+			top = top->last;
 			delete temp;
 			return data;
 		}
@@ -58,7 +62,7 @@ public:
 	{
 		while (true)
 		{
-			if (_isEmpty)
+			if (isEmpty)
 				break;
 			pop();
 		}
