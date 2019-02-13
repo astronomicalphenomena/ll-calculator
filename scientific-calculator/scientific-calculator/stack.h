@@ -2,15 +2,6 @@
 template <typename T>
 class Stack
 {
-private:
-	struct node
-	{
-		T data;
-		node *last = nullptr;
-	};
-	node *top;
-	bool isEmpty = true;
-
 public:
 	bool empty()
 	{
@@ -67,4 +58,12 @@ public:
 			pop();
 		}
 	}
+private:
+	struct node
+	{
+		T data;
+		node *last = nullptr;
+	};
+	node *top;
+	bool isEmpty = true;
 };

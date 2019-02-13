@@ -36,7 +36,7 @@ double Factorial(double n)
 		if (n - (int)n == 0.0)
 		{
 			double result = 1.0;
-			for (int i = 1; i < n; i++)
+			for (int i = 1; i < n; ++i)
 				result *= i;
 			return result * n;
 		}
@@ -44,7 +44,7 @@ double Factorial(double n)
 			throw "[N!] N non natural number";
 	}
 }
-void PrintColorfully(string content, WORD wAttributes, bool isLine = false)
+void PrintColorfully(const string &content, const WORD &wAttributes, bool isLine = false)
 {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
 	cout << content;
@@ -52,17 +52,17 @@ void PrintColorfully(string content, WORD wAttributes, bool isLine = false)
 		cout << endl;
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 }
-bool Calculate(string &expression, const bool &isRadian, double &answer)
+bool Calculate(const string &expression, const bool &isRadian, double &answer)
 {
+	string *postfix_expression[512] = {};
+	int postfix_expression_pointer = 0;
+	Stack<string *> operator_stack;
+	int operand_count = 0;
+	int operator_count = 1;
+	string *temp = nullptr;
 	try
 	{
-		string *a_expression[512] = {};
-		int a_expression_pointer = 0;
-		Stack<string *> operator_stack;
-		int operand_count = 0;
-		int operator_count = 1;
-		string *temp = nullptr;
-		for (string::iterator temp_character = expression.begin(); temp_character < expression.end(); temp_character++)
+		for (string::const_iterator temp_character = expression.begin(); temp_character < expression.end(); ++temp_character)
 		{
 			temp = new string;
 			if ('0' <= *temp_character && *temp_character <= '9')
@@ -70,14 +70,14 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 				while ('0' <= *temp_character && *temp_character <= '9' || *temp_character == '.')
 				{
 					*temp += *temp_character;
-					temp_character++;
+					++temp_character;
 					if (temp_character == expression.end())
 						break;
 				}
-				temp_character--;
-				a_expression[a_expression_pointer] = temp;
-				a_expression_pointer++;
-				operand_count++;
+				--temp_character;
+				postfix_expression[postfix_expression_pointer] = temp;
+				++operand_count;
+				++postfix_expression_pointer;
 				continue;
 			}
 			else if (*temp_character == ',')
@@ -87,16 +87,16 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 				while ('a' <= *temp_character && *temp_character <= 'z' || *temp_character == '#')
 				{
 					*temp += *temp_character;
-					temp_character++;
+					++temp_character;
 					if (temp_character == expression.end())
 						break;
 				}
-				temp_character--;
+				--temp_character;
 				if (*temp == "pi" || *temp == "e" || *temp == "ans" || *temp == "rand#")
 				{
-					a_expression[a_expression_pointer] = temp;
-					a_expression_pointer++;
-					operand_count++;
+					postfix_expression[postfix_expression_pointer] = temp;
+					++operand_count;
+					++postfix_expression_pointer;
 					continue;
 				}
 			}
@@ -109,8 +109,8 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 					{
 						if (*operator_stack.GetTop() != "(")
 						{
-							a_expression[a_expression_pointer] = operator_stack.pop();
-							a_expression_pointer++;
+							postfix_expression[postfix_expression_pointer] = operator_stack.pop();
+							++postfix_expression_pointer;
 						}
 						else
 							break;
@@ -127,7 +127,7 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 			else if (*temp == "(" && operand_count == operator_count)
 			{
 				*temp = "*";
-				temp_character--;
+				--temp_character;
 			}
 			else if (*temp == "%")
 			{
@@ -151,27 +151,27 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 							break;
 						else
 						{
-							a_expression[a_expression_pointer] = operator_stack.pop();
-							a_expression_pointer++;
+							postfix_expression[postfix_expression_pointer] = operator_stack.pop();
+							++postfix_expression_pointer;
 						}
 					}
 				}
 			}
 			if (*temp == "+" || *temp == "-" || *temp == "*" || *temp == "/" || *temp == "^" || *temp == "log")
-				operator_count++;
+				++operator_count;
 			operator_stack.push(temp);
 		}
 		while (!operator_stack.empty())
 		{
-			if (*(a_expression[a_expression_pointer] = operator_stack.pop()) == "(")
+			if (*(postfix_expression[postfix_expression_pointer] = operator_stack.pop()) == "(")
 				throw "missing ')'";
-			a_expression_pointer++;
+			++postfix_expression_pointer;
 		}
 		if (isTesting)
 		{
-			for (int i = 0; i < a_expression_pointer; i++)
+			for (int i = 0; i < postfix_expression_pointer; ++i)
 			{
-				PrintColorfully(*a_expression[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+				PrintColorfully(*postfix_expression[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 				cout << " ";
 			}
 			cout << endl;
@@ -181,87 +181,103 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 			if (isRadian)
 				return function_name(parameter);
 			else
-				return function_name(parameter) * 180 / _PI;
+				return function_name(parameter) * 180.0 / _PI;
 		};
-		if (a_expression[0] == nullptr)
+		if (postfix_expression[0] == nullptr)
 			throw "no operand";
-		else if (!('0' <= (*a_expression[0])[0] && (*a_expression[0])[0] <= '9'))
-		{
-			if (*a_expression[0] != "pi" && *a_expression[0] != "e" && *a_expression[0] != "ans" && *a_expression[0] != "rand#")
+		else if (!('0' <= (*postfix_expression[0])[0] && (*postfix_expression[0])[0] <= '9'))
+			if (*postfix_expression[0] != "pi" && *postfix_expression[0] != "e" && *postfix_expression[0] != "ans" && *postfix_expression[0] != "rand#")
 				throw "unknown error";
-		}
 		Stack<double> result;
-		a_expression_pointer = 0;
-		while (a_expression[a_expression_pointer] != nullptr)
+		postfix_expression_pointer = 0;
+		while (postfix_expression[postfix_expression_pointer] != nullptr)
 		{
-			if ('0' <= (*a_expression[a_expression_pointer])[0] && (*a_expression[a_expression_pointer])[0] <= '9')
-				result.push(stod(*a_expression[a_expression_pointer]));
+			if ('0' <= (*postfix_expression[postfix_expression_pointer])[0] && (*postfix_expression[postfix_expression_pointer])[0] <= '9')
+				result.push(stod(*postfix_expression[postfix_expression_pointer]));
 			else
 			{
 				try
 				{
-					if (*a_expression[a_expression_pointer] == "+")
+					if (*postfix_expression[postfix_expression_pointer] == "+")
 						result.push(result.pop() + result.pop());
-					else if (*a_expression[a_expression_pointer] == "-")
+					else if (*postfix_expression[postfix_expression_pointer] == "-")
 						result.push(0.0 - result.pop() + result.pop());
-					else if (*a_expression[a_expression_pointer] == "--")
+					else if (*postfix_expression[postfix_expression_pointer] == "--")
 						result.push(0.0 - result.pop());
-					else if (*a_expression[a_expression_pointer] == "*")
+					else if (*postfix_expression[postfix_expression_pointer] == "*")
 						result.push(result.pop() * result.pop());
-					else if (*a_expression[a_expression_pointer] == "/")
-						result.push(1.0 / result.pop() * result.pop());
-					else if (*a_expression[a_expression_pointer] == "!")
+					else if (*postfix_expression[postfix_expression_pointer] == "/")
+					{
+						double B;
+						if ((B = result.pop()) == 0.0)
+							throw "[N/0] divisor is zero";
+						else
+							result.push(result.pop() / B);
+					}
+					else if (*postfix_expression[postfix_expression_pointer] == "!")
 						result.push(Factorial(result.pop()));
-					else if (*a_expression[a_expression_pointer] == "%")
+					else if (*postfix_expression[postfix_expression_pointer] == "%")
 					{
 						double B = result.pop();
 						double A = result.pop();
-						if (A - (int)A == 0 && B - (int)B == 0)
+						if (A - (int)A == 0.0 && B - (int)B == 0.0)
 							result.push((int)A % (int)B);
 						else
 							throw "[A%B] A or B non integers";
 					}
-					else if (*a_expression[a_expression_pointer] == "%%")
+					else if (*postfix_expression[postfix_expression_pointer] == "%%")
 						result.push(result.pop() / 100.0);
-					else if (*a_expression[a_expression_pointer] == "^")
+					else if (*postfix_expression[postfix_expression_pointer] == "^")
+					{
+						double A = result.pop();
+						double B = result.pop();
+						result.push(pow(A, B));
+					}
+					else if (*postfix_expression[postfix_expression_pointer] == "min")
+					{
+						double A = result.pop();
+						double B = result.pop();
+						A < B ? result.push(A) : result.push(B);
+					}
+					else if (*postfix_expression[postfix_expression_pointer] == "max")
 					{
 						double B = result.pop();
 						double A = result.pop();
-						result.push(pow(A, B));
+						A > B ? result.push(A) : result.push(B);
 					}
-					else if (*a_expression[a_expression_pointer] == "log")
+					else if (*postfix_expression[postfix_expression_pointer] == "log")
 						result.push(1.0 / log(result.pop()) * log(result.pop()));
-					else if (*a_expression[a_expression_pointer] == "lg")
+					else if (*postfix_expression[postfix_expression_pointer] == "lg")
 						result.push(log10(result.pop()));
-					else if (*a_expression[a_expression_pointer] == "ln")
+					else if (*postfix_expression[postfix_expression_pointer] == "ln")
 						result.push(log(result.pop()));
-					else if (*a_expression[a_expression_pointer] == "sqrt")
+					else if (*postfix_expression[postfix_expression_pointer] == "sqrt")
 					{
-						if (result.GetTop() < 0)
+						if (result.GetTop() < 0.0)
 							throw "[sqrt(N)] N is negative";
 						result.push(sqrt(result.pop()));
 					}
-					else if (*a_expression[a_expression_pointer] == "abs")
+					else if (*postfix_expression[postfix_expression_pointer] == "abs")
 						result.push(abs(result.pop()));
-					else if (*a_expression[a_expression_pointer] == "pi")
+					else if (*postfix_expression[postfix_expression_pointer] == "pi")
 						result.push(_PI);
-					else if (*a_expression[a_expression_pointer] == "e")
+					else if (*postfix_expression[postfix_expression_pointer] == "e")
 						result.push(_E);
-					else if (*a_expression[a_expression_pointer] == "ans")
+					else if (*postfix_expression[postfix_expression_pointer] == "ans")
 						result.push(answer);
-					else if (*a_expression[a_expression_pointer] == "rand#")
+					else if (*postfix_expression[postfix_expression_pointer] == "rand#")
 						result.push(rand());
-					else if (*a_expression[a_expression_pointer] == "arcsin")
+					else if (*postfix_expression[postfix_expression_pointer] == "arcsin")
 						result.push(GetValue(asin, result.pop()));
-					else if (*a_expression[a_expression_pointer] == "arccos")
+					else if (*postfix_expression[postfix_expression_pointer] == "arccos")
 						result.push(GetValue(acos, result.pop()));
-					else if (*a_expression[a_expression_pointer] == "arctan")
+					else if (*postfix_expression[postfix_expression_pointer] == "arctan")
 						result.push(GetValue(atan, result.pop()));
-					else if (*a_expression[a_expression_pointer] == "arsinh")
+					else if (*postfix_expression[postfix_expression_pointer] == "arsinh")
 						result.push(GetValue(asinh, result.pop()));
-					else if (*a_expression[a_expression_pointer] == "arcosh")
+					else if (*postfix_expression[postfix_expression_pointer] == "arcosh")
 						result.push(GetValue(acosh, result.pop()));
-					else if (*a_expression[a_expression_pointer] == "artanh")
+					else if (*postfix_expression[postfix_expression_pointer] == "artanh")
 						result.push(GetValue(atanh, result.pop()));
 					else
 					{
@@ -270,22 +286,22 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 							n = result.pop();
 						else
 							n = result.pop() * _PI / 180.0;
-						if (*a_expression[a_expression_pointer] == "sin")
+						if (*postfix_expression[postfix_expression_pointer] == "sin")
 							result.push(sin(n));
-						else if (*a_expression[a_expression_pointer] == "cos")
+						else if (*postfix_expression[postfix_expression_pointer] == "cos")
 							result.push(cos(n));
-						else if (*a_expression[a_expression_pointer] == "tan")
+						else if (*postfix_expression[postfix_expression_pointer] == "tan")
 							result.push(tan(n));
-						else if (*a_expression[a_expression_pointer] == "sinh")
+						else if (*postfix_expression[postfix_expression_pointer] == "sinh")
 							result.push(sinh(n));
-						else if (*a_expression[a_expression_pointer] == "cosh")
+						else if (*postfix_expression[postfix_expression_pointer] == "cosh")
 							result.push(cosh(n));
-						else if (*a_expression[a_expression_pointer] == "tanh")
+						else if (*postfix_expression[postfix_expression_pointer] == "tanh")
 							result.push(tanh(n));
 						else
 						{
-							*a_expression[a_expression_pointer] = "unknown operator: " + *a_expression[a_expression_pointer];
-							throw a_expression[a_expression_pointer]->c_str();
+							*postfix_expression[postfix_expression_pointer] = "unknown operator: " + *postfix_expression[postfix_expression_pointer];
+							throw postfix_expression[postfix_expression_pointer]->c_str();
 						}
 					}
 				}
@@ -297,8 +313,8 @@ bool Calculate(string &expression, const bool &isRadian, double &answer)
 						throw ERROR_INFORMATION;
 				}
 			}
-			delete a_expression[a_expression_pointer];
-			a_expression_pointer++;
+			delete postfix_expression[postfix_expression_pointer];
+			++postfix_expression_pointer;
 		}
 		answer = result.pop();
 		return true;
@@ -329,7 +345,7 @@ void ExpanseFunction(string &expression, const function &id)
 		pos += id.function_expression.size();
 		string::size_type last_replaced_pos = pos;
 		string *parameter_expression = new string[id.parameter_count];
-		for (int i = 0; i < id.parameter_count; i++)
+		for (int i = 0; i < id.parameter_count; ++i)
 		{
 			Stack<char> left_parenthesis;
 			while (true)
@@ -348,14 +364,14 @@ void ExpanseFunction(string &expression, const function &id)
 					break;
 				else
 					parameter_expression[i] += expression[pos];
-				pos++;
+				++pos;
 			}
-			pos++;
+			++pos;
 		}
 		expression.erase(last_replaced_pos, pos - last_replaced_pos);
-		for (int i = 0; i < id.parameter_count; i++)
+		for (int i = 0; i < id.parameter_count; ++i)
 		{
-			for (pos = first_replaced_pos; pos <= last_replaced_pos; pos++)
+			for (pos = first_replaced_pos; pos <= last_replaced_pos; ++pos)
 			{
 				if (expression[pos] == id.parameter_name[i])
 				{
@@ -387,7 +403,7 @@ void LoadSettings()
 	answer = document["answer"].GetDouble();
 	created_count = document["functions_count"].GetInt();
 	const Value &_functions = document["functions"];
-	for (int i = 0; i < created_count; i++)
+	for (int i = 0; i < created_count; ++i)
 	{
 		functions[i].isEnabled = true;
 		functions[i].function_name = _functions[i]["function_name"].GetString();
@@ -412,7 +428,7 @@ void SaveSettings()
 	output.Int(created_count);
 	output.Key("functions");
 	output.StartArray();
-	for (int i = 0; i < MAX_FUNCTIONS_COUNT; i++)
+	for (int i = 0; i < MAX_FUNCTIONS_COUNT; ++i)
 	{
 		if (functions[i].isEnabled)
 		{
@@ -452,7 +468,7 @@ int main()
 	PrintColorfully("Welcome", FOREGROUND_RED | FOREGROUND_INTENSITY);
 	PrintColorfully(" to ", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 	PrintColorfully("Scientific Calculator", FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
-	Stack<int> functions_pointers;
+	Stack<int> used_functions_pointers;
 	string expression;
 	string content;
 	while (cin >> content)
@@ -463,6 +479,12 @@ int main()
 				isRadian = true;
 			else if (content == "-deg")
 				isRadian = false;
+			else if (content == "-fix")
+			{
+				PrintColorfully("FIX number? ", FOREGROUND_RED | FOREGROUND_GREEN);
+				cin >> FIXnum;
+				cout << setprecision(FIXnum);
+			}
 			else if (content == "-f")
 			{
 				if (created_count == MAX_FUNCTIONS_COUNT)
@@ -470,42 +492,44 @@ int main()
 				else
 				{
 					int temp_pointer;
-					if (functions_pointers.empty())
+					if (used_functions_pointers.empty())
 						temp_pointer = created_count;
 					else
-						temp_pointer = functions_pointers.pop();
+						temp_pointer = used_functions_pointers.pop();
+					functions[temp_pointer] = {};
 					functions[temp_pointer].isEnabled = true;
 					cin >> content;
 					string::size_type pos = 0;
-					for (; content[pos] != '('; pos++)
+					for (; content[pos] != '('; ++pos)
 						functions[temp_pointer].function_name += content[pos];
 					functions[temp_pointer].function_name += "(";
-					pos++;
+					++pos;
 					string::size_type first_parameter_pos = pos;
-					for (; content[pos] != ')'; pos++)
+					for (; content[pos] != ')'; ++pos)
 						if (content[pos] == ',')
-							functions[temp_pointer].parameter_count++;
-					functions[temp_pointer].parameter_count++;
-					for (; first_parameter_pos != pos; first_parameter_pos++)
+							++functions[temp_pointer].parameter_count;
+					++functions[temp_pointer].parameter_count;
+					for (; first_parameter_pos != pos; ++first_parameter_pos)
 						if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
 							functions[temp_pointer].parameter_name += content[first_parameter_pos];
 					while (content[pos] != '=')
-						pos++;
-					pos++;
+						++pos;
+					++pos;
 					for (; pos != content.size(); pos++)
 						functions[temp_pointer].function_expression += content[pos];
 					functions[temp_pointer].function_expression = "(" + functions[temp_pointer].function_expression + ")";
-					created_count++;
+					++created_count;
 				}
 			}
 			else if (content == "-sf")
 			{
-				for (int i = 0; i < MAX_FUNCTIONS_COUNT; i++)
+				int showed = 0;
+				for (int i = 0; i < MAX_FUNCTIONS_COUNT; ++i)
 				{
 					if (!functions[i].isEnabled)
 						continue;
 					PrintColorfully("NO: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(to_string(i), FOREGROUND_GREEN, true);
+					PrintColorfully(to_string(showed), FOREGROUND_GREEN, true);
 					PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
 					PrintColorfully(functions[i].function_name, FOREGROUND_GREEN, true);
 					PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
@@ -515,6 +539,7 @@ int main()
 					PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
 					PrintColorfully(functions[i].function_expression, FOREGROUND_GREEN, true);
 					cout << endl;
+					++showed;
 				}
 			}
 			else if (content == "-df")
@@ -522,26 +547,18 @@ int main()
 				PrintColorfully("function name?", FOREGROUND_RED | FOREGROUND_GREEN);
 				string function_name;
 				cin >> function_name;
-				for (int i = 0; i < MAX_FUNCTIONS_COUNT; i++)
+				for (int p = 0; p < MAX_FUNCTIONS_COUNT; ++p)
 				{
-					if (functions[i].isEnabled)
+					if (functions[p].isEnabled)
 					{
-						if (functions[i].function_name == function_name)
+						if (functions[p].function_name == function_name)
 						{
-							functions[i].isEnabled = false;
-							functions_pointers.push(i);
-							created_count--;
+							functions[p].isEnabled = false;
+							used_functions_pointers.push(p);
+							--created_count;
 						}
 					}
 				}
-			}
-			else if (content == "-exit")
-				break;
-			else if (content == "-fix")
-			{
-				PrintColorfully("FIX number? ", FOREGROUND_RED | FOREGROUND_GREEN);
-				cin >> FIXnum;
-				cout << setprecision(FIXnum);
 			}
 			else if (content == "-load")
 				LoadSettings();
@@ -549,6 +566,8 @@ int main()
 				SaveSettings();
 			else if (content == "-test")
 				isTesting = true;
+			else if (content == "-exit")
+				break;
 			else
 				PrintColorfully("ERROR INSTRUCTION", FOREGROUND_RED, true);
 		}
@@ -564,10 +583,10 @@ int main()
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				else
 				{
-					for (int i = 0; i < MAX_FUNCTIONS_COUNT; i++)
+					for (int p = 0; p < MAX_FUNCTIONS_COUNT; ++p)
 					{
-						if (functions[i].isEnabled)
-							ExpanseFunction(expression, functions[i]);
+						if (functions[p].isEnabled)
+							ExpanseFunction(expression, functions[p]);
 					}
 					if (isTesting)
 						PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
