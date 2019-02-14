@@ -229,8 +229,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						result.push(result.pop() / 100.0);
 					else if (*postfix_expression[postfix_expression_pointer] == "^")
 					{
-						double A = result.pop();
 						double B = result.pop();
+						double A = result.pop();
 						result.push(pow(A, B));
 					}
 					else if (*postfix_expression[postfix_expression_pointer] == "min")
@@ -573,12 +573,12 @@ int main()
 		}
 		else
 		{
+			bool isCalculateSuccessfully;
 			if (content == "=")
-				Calculate(expression, isRadian, answer);
+				isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 			else
 			{
 				expression = content;
-				bool isCalculateSuccessfully;
 				if (created_count == 0)
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				else
@@ -592,12 +592,12 @@ int main()
 						PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				}
-				if (isCalculateSuccessfully)
-				{
-					cout.setf(ios::fixed);
-					PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(to_string(answer), FOREGROUND_GREEN, true);
-				}
+			}
+			if (isCalculateSuccessfully)
+			{
+				cout.setf(ios::fixed);
+				PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(to_string(answer), FOREGROUND_GREEN, true);
 			}
 		}
 	}
