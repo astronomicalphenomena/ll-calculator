@@ -55,8 +55,9 @@ void PrintColorfully(const string &content, const WORD &wAttributes, bool isLine
 }
 bool Calculate(const string &expression, const bool &isRadian, double &answer)
 {
-	string *postfix_expression[512] = {};
-	int postfix_expression_pointer = 0;
+	const int MAX_RPN_COUNT = 512;
+	string *RPN[MAX_RPN_COUNT] = {};
+	int RPN_pointer = 0;
 	Stack<string *> operator_stack;
 	int operand_count = 0;
 	int operator_count = 1;
@@ -76,9 +77,9 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						break;
 				}
 				--iter;
-				postfix_expression[postfix_expression_pointer] = temp;
+				RPN[RPN_pointer] = temp;
 				++operand_count;
-				++postfix_expression_pointer;
+				++RPN_pointer;
 				continue;
 			}
 			else if (*iter == ',')
@@ -95,9 +96,9 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 				--iter;
 				if (*temp == "pi" || *temp == "e" || *temp == "ans" || *temp == "rand#")
 				{
-					postfix_expression[postfix_expression_pointer] = temp;
+					RPN[RPN_pointer] = temp;
 					++operand_count;
-					++postfix_expression_pointer;
+					++RPN_pointer;
 					continue;
 				}
 			}
@@ -110,8 +111,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 					{
 						if (*operator_stack.GetTop() != "(")
 						{
-							postfix_expression[postfix_expression_pointer] = operator_stack.pop();
-							++postfix_expression_pointer;
+							RPN[RPN_pointer] = operator_stack.pop();
+							++RPN_pointer;
 						}
 						else
 							break;
@@ -152,8 +153,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 							break;
 						else
 						{
-							postfix_expression[postfix_expression_pointer] = operator_stack.pop();
-							++postfix_expression_pointer;
+							RPN[RPN_pointer] = operator_stack.pop();
+							++RPN_pointer;
 						}
 					}
 				}
@@ -164,15 +165,15 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		}
 		while (!operator_stack.empty())
 		{
-			if (*(postfix_expression[postfix_expression_pointer] = operator_stack.pop()) == "(")
+			if (*(RPN[RPN_pointer] = operator_stack.pop()) == "(")
 				throw "')' missed";
-			++postfix_expression_pointer;
+			++RPN_pointer;
 		}
 		if (isTesting)
 		{
-			for (int i = 0; i < postfix_expression_pointer; ++i)
+			for (int i = 0; i < RPN_pointer; ++i)
 			{
-				PrintColorfully(*postfix_expression[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+				PrintColorfully(*RPN[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 				cout << " ";
 			}
 			cout << endl;
@@ -184,30 +185,30 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			else
 				return function_name(parameter) * 180.0 / _PI;
 		};
-		if (postfix_expression[0] == nullptr)
+		if (RPN[0] == nullptr)
 			throw "no operand";
-		else if (!('0' <= (*postfix_expression[0])[0] && (*postfix_expression[0])[0] <= '9'))
-			if (*postfix_expression[0] != "pi" && *postfix_expression[0] != "e" && *postfix_expression[0] != "ans" && *postfix_expression[0] != "rand#")
+		else if (!('0' <= (*RPN[0])[0] && (*RPN[0])[0] <= '9'))
+			if (*RPN[0] != "pi" && *RPN[0] != "e" && *RPN[0] != "ans" && *RPN[0] != "rand#")
 				throw "unknown error";
 		Stack<double> result;
-		postfix_expression_pointer = 0;
-		while (postfix_expression[postfix_expression_pointer] != nullptr)
+		RPN_pointer = 0;
+		while (RPN[RPN_pointer] != nullptr)
 		{
-			if ('0' <= (*postfix_expression[postfix_expression_pointer])[0] && (*postfix_expression[postfix_expression_pointer])[0] <= '9')
-				result.push(stod(*postfix_expression[postfix_expression_pointer]));
+			if ('0' <= (*RPN[RPN_pointer])[0] && (*RPN[RPN_pointer])[0] <= '9')
+				result.push(stod(*RPN[RPN_pointer]));
 			else
 			{
 				try
 				{
-					if (*postfix_expression[postfix_expression_pointer] == "+")
+					if (*RPN[RPN_pointer] == "+")
 						result.push(result.pop() + result.pop());
-					else if (*postfix_expression[postfix_expression_pointer] == "-")
+					else if (*RPN[RPN_pointer] == "-")
 						result.push(0.0 - result.pop() + result.pop());
-					else if (*postfix_expression[postfix_expression_pointer] == "--")
+					else if (*RPN[RPN_pointer] == "--")
 						result.push(0.0 - result.pop());
-					else if (*postfix_expression[postfix_expression_pointer] == "*")
+					else if (*RPN[RPN_pointer] == "*")
 						result.push(result.pop() * result.pop());
-					else if (*postfix_expression[postfix_expression_pointer] == "/")
+					else if (*RPN[RPN_pointer] == "/")
 					{
 						double B;
 						if ((B = result.pop()) == 0.0)
@@ -215,9 +216,9 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						else
 							result.push(result.pop() / B);
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "!")
+					else if (*RPN[RPN_pointer] == "!")
 						result.push(Factorial(result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "%")
+					else if (*RPN[RPN_pointer] == "%")
 					{
 						double B = result.pop();
 						double A = result.pop();
@@ -226,59 +227,59 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						else
 							throw "[A%B] A or B non integers";
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "%%")
+					else if (*RPN[RPN_pointer] == "%%")
 						result.push(result.pop() / 100.0);
-					else if (*postfix_expression[postfix_expression_pointer] == "^")
+					else if (*RPN[RPN_pointer] == "^")
 					{
 						double B = result.pop();
 						double A = result.pop();
 						result.push(pow(A, B));
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "min")
+					else if (*RPN[RPN_pointer] == "min")
 					{
 						double A = result.pop();
 						double B = result.pop();
 						A < B ? result.push(A) : result.push(B);
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "max")
+					else if (*RPN[RPN_pointer] == "max")
 					{
 						double B = result.pop();
 						double A = result.pop();
 						A > B ? result.push(A) : result.push(B);
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "log")
+					else if (*RPN[RPN_pointer] == "log")
 						result.push(1.0 / log(result.pop()) * log(result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "lg")
+					else if (*RPN[RPN_pointer] == "lg")
 						result.push(log10(result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "ln")
+					else if (*RPN[RPN_pointer] == "ln")
 						result.push(log(result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "sqrt")
+					else if (*RPN[RPN_pointer] == "sqrt")
 					{
 						if (result.GetTop() < 0.0)
 							throw "[sqrt(N)] N is negative";
 						result.push(sqrt(result.pop()));
 					}
-					else if (*postfix_expression[postfix_expression_pointer] == "abs")
+					else if (*RPN[RPN_pointer] == "abs")
 						result.push(abs(result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "pi")
+					else if (*RPN[RPN_pointer] == "pi")
 						result.push(_PI);
-					else if (*postfix_expression[postfix_expression_pointer] == "e")
+					else if (*RPN[RPN_pointer] == "e")
 						result.push(_E);
-					else if (*postfix_expression[postfix_expression_pointer] == "ans")
+					else if (*RPN[RPN_pointer] == "ans")
 						result.push(answer);
-					else if (*postfix_expression[postfix_expression_pointer] == "rand#")
+					else if (*RPN[RPN_pointer] == "rand#")
 						result.push(rand());
-					else if (*postfix_expression[postfix_expression_pointer] == "arcsin")
+					else if (*RPN[RPN_pointer] == "arcsin")
 						result.push(GetValue(asin, result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "arccos")
+					else if (*RPN[RPN_pointer] == "arccos")
 						result.push(GetValue(acos, result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "arctan")
+					else if (*RPN[RPN_pointer] == "arctan")
 						result.push(GetValue(atan, result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "arsinh")
+					else if (*RPN[RPN_pointer] == "arsinh")
 						result.push(GetValue(asinh, result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "arcosh")
+					else if (*RPN[RPN_pointer] == "arcosh")
 						result.push(GetValue(acosh, result.pop()));
-					else if (*postfix_expression[postfix_expression_pointer] == "artanh")
+					else if (*RPN[RPN_pointer] == "artanh")
 						result.push(GetValue(atanh, result.pop()));
 					else
 					{
@@ -287,22 +288,22 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 							n = result.pop();
 						else
 							n = result.pop() * _PI / 180.0;
-						if (*postfix_expression[postfix_expression_pointer] == "sin")
+						if (*RPN[RPN_pointer] == "sin")
 							result.push(sin(n));
-						else if (*postfix_expression[postfix_expression_pointer] == "cos")
+						else if (*RPN[RPN_pointer] == "cos")
 							result.push(cos(n));
-						else if (*postfix_expression[postfix_expression_pointer] == "tan")
+						else if (*RPN[RPN_pointer] == "tan")
 							result.push(tan(n));
-						else if (*postfix_expression[postfix_expression_pointer] == "sinh")
+						else if (*RPN[RPN_pointer] == "sinh")
 							result.push(sinh(n));
-						else if (*postfix_expression[postfix_expression_pointer] == "cosh")
+						else if (*RPN[RPN_pointer] == "cosh")
 							result.push(cosh(n));
-						else if (*postfix_expression[postfix_expression_pointer] == "tanh")
+						else if (*RPN[RPN_pointer] == "tanh")
 							result.push(tanh(n));
 						else
 						{
-							*postfix_expression[postfix_expression_pointer] = "unknown operator: " + *postfix_expression[postfix_expression_pointer];
-							throw postfix_expression[postfix_expression_pointer]->c_str();
+							*RPN[RPN_pointer] = "unknown operator: " + *RPN[RPN_pointer];
+							throw RPN[RPN_pointer]->c_str();
 						}
 					}
 				}
@@ -314,9 +315,10 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						throw ERROR_INFORMATION;
 				}
 			}
-			delete postfix_expression[postfix_expression_pointer];
-			++postfix_expression_pointer;
+			++RPN_pointer;
 		}
+		for (int i = 0; i < MAX_RPN_COUNT; i++)
+			delete RPN[i];
 		answer = result.pop();
 		return true;
 	}
@@ -325,6 +327,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		cout << endl;
 		PrintColorfully("ERROR: ", FOREGROUND_RED);
 		PrintColorfully(ERROR_INFORMATION, FOREGROUND_GREEN, true);
+		for (int i = 0; i < MAX_RPN_COUNT; i++)
+			delete RPN[i];
 		return false;
 	}
 }
