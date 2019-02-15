@@ -22,8 +22,7 @@ min(x,y) max(x,y) logx(y)
 ### Create
 You can enter this instruction to create your function.<br/>
 **-f**<br/>
-If it prints **The list of functions is full.** then you can't continue to create functions.<br/>
-If it not then enter the function expression to save your function.<br/>
+Then enter the function expression to save your function.<br/>
 Format:***functionName*(*parameterName1*,*parameterName2*...)=*expression***<br/>
 (e.g.):**add(x,y)=x+y**
 ### Delete

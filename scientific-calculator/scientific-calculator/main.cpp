@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <vector>
 #include <cmath>
 #include <ctime>
 #include "rapidjson/filewritestream.h"
@@ -62,36 +63,36 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 	string *temp = nullptr;
 	try
 	{
-		for (string::const_iterator temp_character = expression.begin(); temp_character < expression.end(); ++temp_character)
+		for (string::const_iterator iter = expression.begin(); iter < expression.end(); ++iter)
 		{
 			temp = new string;
-			if ('0' <= *temp_character && *temp_character <= '9')
+			if ('0' <= *iter && *iter <= '9')
 			{
-				while ('0' <= *temp_character && *temp_character <= '9' || *temp_character == '.')
+				while ('0' <= *iter && *iter <= '9' || *iter == '.')
 				{
-					*temp += *temp_character;
-					++temp_character;
-					if (temp_character == expression.end())
+					*temp += *iter;
+					++iter;
+					if (iter == expression.end())
 						break;
 				}
-				--temp_character;
+				--iter;
 				postfix_expression[postfix_expression_pointer] = temp;
 				++operand_count;
 				++postfix_expression_pointer;
 				continue;
 			}
-			else if (*temp_character == ',')
+			else if (*iter == ',')
 				continue;
-			else if ('a' <= *temp_character && *temp_character <= 'z')
+			else if ('a' <= *iter && *iter <= 'z')
 			{
-				while ('a' <= *temp_character && *temp_character <= 'z' || *temp_character == '#')
+				while ('a' <= *iter && *iter <= 'z' || *iter == '#')
 				{
-					*temp += *temp_character;
-					++temp_character;
-					if (temp_character == expression.end())
+					*temp += *iter;
+					++iter;
+					if (iter == expression.end())
 						break;
 				}
-				--temp_character;
+				--iter;
 				if (*temp == "pi" || *temp == "e" || *temp == "ans" || *temp == "rand#")
 				{
 					postfix_expression[postfix_expression_pointer] = temp;
@@ -102,7 +103,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			}
 			else
 			{
-				*temp = *temp_character;
+				*temp = *iter;
 				if (*temp == ")")
 				{
 					while (!operator_stack.empty())
@@ -118,7 +119,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 					if (!operator_stack.empty())
 						operator_stack.pop();
 					else
-						throw "missing '('";
+						throw "'(' missed";
 					continue;
 				}
 			}
@@ -127,14 +128,14 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			else if (*temp == "(" && operand_count == operator_count)
 			{
 				*temp = "*";
-				--temp_character;
+				--iter;
 			}
 			else if (*temp == "%")
 			{
-				if (temp_character == expression.end() - 1)
+				if (iter == expression.end() - 1)
 					*temp = "%%";
 				else
-					if (!('0' <= *(temp_character + 1) && *(temp_character + 1) <= '9'))
+					if (!('0' <= *(iter + 1) && *(iter + 1) <= '9'))
 						*temp = "%%";
 			}
 			while (true)
@@ -164,7 +165,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		while (!operator_stack.empty())
 		{
 			if (*(postfix_expression[postfix_expression_pointer] = operator_stack.pop()) == "(")
-				throw "missing ')'";
+				throw "')' missed";
 			++postfix_expression_pointer;
 		}
 		if (isTesting)
@@ -308,7 +309,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 				catch (const char *ERROR_INFORMATION)
 				{
 					if (ERROR_INFORMATION == "Stack is Empty")
-						throw "missing operand";
+						throw "operand missed";
 					else
 						throw ERROR_INFORMATION;
 				}
@@ -329,65 +330,63 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 }
 struct function
 {
-	bool isEnabled = false;
 	string function_name = "";
 	int parameter_count = 0;
 	string parameter_name = "";
 	string function_expression = "";
-};
-void ExpanseFunction(string &expression, const function &id)
-{
-	string::size_type pos = 0;
-	while ((pos = expression.find(id.function_name, pos)) != string::npos)
+	void ExpanseFunction(string &expression)
 	{
-		expression.replace(pos, id.function_name.size(), id.function_expression);
-		string::size_type first_replaced_pos = pos;
-		pos += id.function_expression.size();
-		string::size_type last_replaced_pos = pos;
-		string *parameter_expression = new string[id.parameter_count];
-		for (int i = 0; i < id.parameter_count; ++i)
+		string::size_type pos = 0;
+		while ((pos = expression.find(function_name, pos)) != string::npos)
 		{
-			Stack<char> left_parenthesis;
-			while (true)
+			expression.replace(pos, function_name.size(), function_expression);
+			string::size_type first_replaced_pos = pos;
+			pos += function_expression.size();
+			string::size_type last_replaced_pos = pos;
+			string *parameter_expression = new string[parameter_count];
+			for (int i = 0; i < parameter_count; ++i)
 			{
-				if (expression[pos] == '(')
+				Stack<char> left_parenthesis;
+				while (true)
 				{
-					parameter_expression[i] += expression[pos];
-					left_parenthesis.push('L');
+					if (expression[pos] == '(')
+					{
+						parameter_expression[i] += expression[pos];
+						left_parenthesis.push('L');
+					}
+					else if (expression[pos] == ')' && !left_parenthesis.empty())
+					{
+						parameter_expression[i] += expression[pos];
+						left_parenthesis.pop();
+					}
+					else if ((expression[pos] == ')' || expression[pos] == ',') && left_parenthesis.empty())
+						break;
+					else
+						parameter_expression[i] += expression[pos];
+					++pos;
 				}
-				else if (expression[pos] == ')' && !left_parenthesis.empty())
-				{
-					parameter_expression[i] += expression[pos];
-					left_parenthesis.pop();
-				}
-				else if ((expression[pos] == ')' || expression[pos] == ',') && left_parenthesis.empty())
-					break;
-				else
-					parameter_expression[i] += expression[pos];
 				++pos;
 			}
-			++pos;
-		}
-		expression.erase(last_replaced_pos, pos - last_replaced_pos);
-		for (int i = 0; i < id.parameter_count; ++i)
-		{
-			for (pos = first_replaced_pos; pos <= last_replaced_pos; ++pos)
+			expression.erase(last_replaced_pos, pos - last_replaced_pos);
+			for (int i = 0; i < parameter_count; ++i)
 			{
-				if (expression[pos] == id.parameter_name[i])
+				for (pos = first_replaced_pos; pos <= last_replaced_pos; ++pos)
 				{
-					expression.replace(pos, 1, parameter_expression[i]);
-					last_replaced_pos += parameter_expression[i].size() - 1;
+					if (expression[pos] == parameter_name[i])
+					{
+						expression.replace(pos, 1, parameter_expression[i]);
+						last_replaced_pos += parameter_expression[i].size() - 1;
+					}
 				}
 			}
+			pos = first_replaced_pos;
 		}
-		pos = first_replaced_pos;
 	}
-}
+};
 int FIXnum = 0;
 bool isRadian = false;
 double answer = 0.0;
-const int MAX_FUNCTIONS_COUNT = 32;
-function functions[MAX_FUNCTIONS_COUNT];
+vector<function*> functions;
 int created_count = 0;
 void LoadSettings()
 {
@@ -402,14 +401,16 @@ void LoadSettings()
 	isRadian = document["isRadian"].GetBool();
 	answer = document["answer"].GetDouble();
 	created_count = document["functions_count"].GetInt();
+	functions.clear();
 	const Value &_functions = document["functions"];
 	for (int i = 0; i < created_count; ++i)
 	{
-		functions[i].isEnabled = true;
-		functions[i].function_name = _functions[i]["function_name"].GetString();
-		functions[i].parameter_count = _functions[i]["parameter_count"].GetInt();
-		functions[i].parameter_name = _functions[i]["parameter_name"].GetString();
-		functions[i].function_expression = _functions[i]["function_expression"].GetString();
+		function *importing = new function;
+		importing->function_name = _functions[i]["function_name"].GetString();
+		importing->parameter_count = _functions[i]["parameter_count"].GetInt();
+		importing->parameter_name = _functions[i]["parameter_name"].GetString();
+		importing->function_expression = _functions[i]["function_expression"].GetString();
+		functions.push_back(importing);
 	}
 }
 void SaveSettings()
@@ -428,21 +429,18 @@ void SaveSettings()
 	output.Int(created_count);
 	output.Key("functions");
 	output.StartArray();
-	for (int i = 0; i < MAX_FUNCTIONS_COUNT; ++i)
+	for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
 	{
-		if (functions[i].isEnabled)
-		{
-			output.StartObject();
-			output.Key("function_name");
-			output.String(functions[i].function_name.c_str());
-			output.Key("parameter_count");
-			output.Int(functions[i].parameter_count);
-			output.Key("parameter_name");
-			output.String(functions[i].parameter_name.c_str());
-			output.Key("function_expression");
-			output.String(functions[i].function_expression.c_str());
-			output.EndObject();
-		}
+		output.StartObject();
+		output.Key("function_name");
+		output.String((*iter)->function_name.c_str());
+		output.Key("parameter_count");
+		output.Int((*iter)->parameter_count);
+		output.Key("parameter_name");
+		output.String((*iter)->parameter_name.c_str());
+		output.Key("function_expression");
+		output.String((*iter)->function_expression.c_str());
+		output.EndObject();
 	}
 	output.EndArray();
 	output.EndObject();
@@ -455,20 +453,12 @@ void SaveSettings()
 	document.Accept(writer);
 	fclose(file_pointer);
 }
-BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
-{
-	if (CTRL_CLOSE_EVENT == dwCtrlType)
-		SaveSettings();
-	return TRUE;
-}
 int main()
 {
-	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 	srand(time(NULL));
 	PrintColorfully("Welcome", FOREGROUND_RED | FOREGROUND_INTENSITY);
 	PrintColorfully(" to ", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 	PrintColorfully("Scientific Calculator", FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
-	Stack<int> used_functions_pointers;
 	string expression;
 	string content;
 	while (cin >> content)
@@ -487,59 +477,43 @@ int main()
 			}
 			else if (content == "-f")
 			{
-				if (created_count == MAX_FUNCTIONS_COUNT)
-					PrintColorfully("The list of functions is full", FOREGROUND_RED | FOREGROUND_GREEN, true);
-				else
-				{
-					int temp_pointer;
-					if (used_functions_pointers.empty())
-						temp_pointer = created_count;
-					else
-						temp_pointer = used_functions_pointers.pop();
-					functions[temp_pointer] = {};
-					functions[temp_pointer].isEnabled = true;
-					cin >> content;
-					string::size_type pos = 0;
-					for (; content[pos] != '('; ++pos)
-						functions[temp_pointer].function_name += content[pos];
-					functions[temp_pointer].function_name += "(";
+				function *creating = new function;
+				cin >> content;
+				string::size_type pos = 0;
+				for (; content[pos] != '('; ++pos)
+					creating->function_name += content[pos];
+				creating->function_name += "(";
+				++pos;
+				string::size_type first_parameter_pos = pos;
+				for (; content[pos] != ')'; ++pos)
+					if (content[pos] == ',')
+						++creating->parameter_count;
+				++creating->parameter_count;
+				for (; first_parameter_pos != pos; ++first_parameter_pos)
+					if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
+						creating->parameter_name += content[first_parameter_pos];
+				while (content[pos] != '=')
 					++pos;
-					string::size_type first_parameter_pos = pos;
-					for (; content[pos] != ')'; ++pos)
-						if (content[pos] == ',')
-							++functions[temp_pointer].parameter_count;
-					++functions[temp_pointer].parameter_count;
-					for (; first_parameter_pos != pos; ++first_parameter_pos)
-						if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
-							functions[temp_pointer].parameter_name += content[first_parameter_pos];
-					while (content[pos] != '=')
-						++pos;
-					++pos;
-					for (; pos != content.size(); pos++)
-						functions[temp_pointer].function_expression += content[pos];
-					functions[temp_pointer].function_expression = "(" + functions[temp_pointer].function_expression + ")";
-					++created_count;
-				}
+				++pos;
+				for (; pos != content.size(); pos++)
+					creating->function_expression += content[pos];
+				creating->function_expression = "(" + creating->function_expression + ")";
+				functions.push_back(creating);
+				++created_count;
 			}
 			else if (content == "-sf")
 			{
-				int showed = 0;
-				for (int i = 0; i < MAX_FUNCTIONS_COUNT; ++i)
+				for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
 				{
-					if (!functions[i].isEnabled)
-						continue;
-					PrintColorfully("NO: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(to_string(showed), FOREGROUND_GREEN, true);
 					PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(functions[i].function_name, FOREGROUND_GREEN, true);
+					PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
 					PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(to_string(functions[i].parameter_count), FOREGROUND_GREEN, true);
+					PrintColorfully(to_string((*iter)->parameter_count), FOREGROUND_GREEN, true);
 					PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(functions[i].parameter_name, FOREGROUND_GREEN, true);
+					PrintColorfully((*iter)->parameter_name, FOREGROUND_GREEN, true);
 					PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(functions[i].function_expression, FOREGROUND_GREEN, true);
+					PrintColorfully((*iter)->function_expression, FOREGROUND_GREEN, true);
 					cout << endl;
-					++showed;
 				}
 			}
 			else if (content == "-df")
@@ -547,18 +521,19 @@ int main()
 				PrintColorfully("function name?", FOREGROUND_RED | FOREGROUND_GREEN);
 				string function_name;
 				cin >> function_name;
-				for (int p = 0; p < MAX_FUNCTIONS_COUNT; ++p)
+				bool isDeleted = false;
+				for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
 				{
-					if (functions[p].isEnabled)
+					if ((*iter)->function_name == function_name)
 					{
-						if (functions[p].function_name == function_name)
-						{
-							functions[p].isEnabled = false;
-							used_functions_pointers.push(p);
-							--created_count;
-						}
+						functions.erase(iter);
+						isDeleted = true;
+						--created_count;
+						break;
 					}
 				}
+				if (!isDeleted)
+					PrintColorfully("NOT FOUND", FOREGROUND_RED, true);
 			}
 			else if (content == "-load")
 				LoadSettings();
@@ -583,11 +558,8 @@ int main()
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				else
 				{
-					for (int p = 0; p < MAX_FUNCTIONS_COUNT; ++p)
-					{
-						if (functions[p].isEnabled)
-							ExpanseFunction(expression, functions[p]);
-					}
+					for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+						(*iter)->ExpanseFunction(expression);
 					if (isTesting)
 						PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
