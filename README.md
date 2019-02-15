@@ -32,7 +32,7 @@ You enter this instruction to delete your function.<br/>
 You enter this instruction to show your functions.<br/>
 **-sf**
 ## Special operands:
-This program supports 2 constants and 2 variables.<br/>
+This program provides 2 constants and 2 variables.<br/>
 **pi e ans rand#**
 ## Other instructions:
 ### -rad
