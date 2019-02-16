@@ -573,7 +573,9 @@ int main()
 			{
 				cout.setf(ios::fixed);
 				PrintColorfully("result: ", FOREGROUND_RED | FOREGROUND_GREEN);
-				PrintColorfully(to_string(answer), FOREGROUND_GREEN, true);
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+				cout << answer << endl;
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 			}
 		}
 	}
