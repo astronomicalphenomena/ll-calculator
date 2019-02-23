@@ -143,6 +143,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			{
 				if (operator_stack.empty())
 					break;
+				else if (*temp == "*" && *iter != '*' && *(iter + 1) == '(')
+					break;
 				else
 				{
 					if (*operator_stack.GetTop() == "(")
@@ -159,7 +161,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 					}
 				}
 			}
-			if (*temp == "+" || *temp == "-" || *temp == "*" || *temp == "/" || *temp == "^" || *temp == "log")
+			if (*temp == "+" || *temp == "-" || *temp == "*" || *temp == "/" || *temp == "%" || *temp == "^" || *temp == "min" || *temp == "max" || *temp == "log")
 				++operator_count;
 			operator_stack.push(temp);
 		}
