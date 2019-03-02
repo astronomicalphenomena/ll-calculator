@@ -55,10 +55,8 @@ void PrintColorfully(const string &content, const WORD &wAttributes, bool isLine
 }
 bool Calculate(const string &expression, const bool &isRadian, double &answer)
 {
-	const int MAX_RPN_COUNT = 512;
-	string *RPN[MAX_RPN_COUNT] = {};
-	int RPN_pointer = 0;
-	Stack<string *> operator_stack;
+	vector<string*> RPN;
+	Stack<string*> operator_stack;
 	int operand_count = 0;
 	int operator_count = 1;
 	string *temp = nullptr;
@@ -77,9 +75,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						break;
 				}
 				--iter;
-				RPN[RPN_pointer] = temp;
+				RPN.push_back(temp);
 				++operand_count;
-				++RPN_pointer;
 				continue;
 			}
 			else if (*iter == ',')
@@ -96,9 +93,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 				--iter;
 				if (*temp == "pi" || *temp == "e" || *temp == "ans" || *temp == "rand#")
 				{
-					RPN[RPN_pointer] = temp;
+					RPN.push_back(temp);
 					++operand_count;
-					++RPN_pointer;
 					continue;
 				}
 			}
@@ -110,10 +106,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 					while (!operator_stack.empty())
 					{
 						if (*operator_stack.GetTop() != "(")
-						{
-							RPN[RPN_pointer] = operator_stack.pop();
-							++RPN_pointer;
-						}
+							RPN.push_back(operator_stack.pop());
 						else
 							break;
 					}
@@ -154,10 +147,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						if (GetPriority(temp) > GetPriority(operator_stack.GetTop()))
 							break;
 						else
-						{
-							RPN[RPN_pointer] = operator_stack.pop();
-							++RPN_pointer;
-						}
+							RPN.push_back(operator_stack.pop());
 					}
 				}
 			}
@@ -167,13 +157,13 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		}
 		while (!operator_stack.empty())
 		{
-			if (*(RPN[RPN_pointer] = operator_stack.pop()) == "(")
+			RPN.push_back(operator_stack.pop());
+			if (*(RPN.back()) == "(")
 				throw "')' missed";
-			++RPN_pointer;
 		}
 		if (isTesting)
 		{
-			for (int i = 0; i < RPN_pointer; ++i)
+			for (int i = 0; i < RPN.size(); ++i)
 			{
 				PrintColorfully(*RPN[i], FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 				cout << " ";
@@ -193,24 +183,23 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			if (*RPN[0] != "pi" && *RPN[0] != "e" && *RPN[0] != "ans" && *RPN[0] != "rand#")
 				throw "unknown error";
 		Stack<double> result;
-		RPN_pointer = 0;
-		while (RPN[RPN_pointer] != nullptr)
+		for (vector<string*>::const_iterator iter = RPN.begin(); iter < RPN.end(); ++iter)
 		{
-			if ('0' <= (*RPN[RPN_pointer])[0] && (*RPN[RPN_pointer])[0] <= '9')
-				result.push(stod(*RPN[RPN_pointer]));
+			if ('0' <= (**iter)[0] && (**iter)[0] <= '9')
+				result.push(stod(**iter));
 			else
 			{
 				try
 				{
-					if (*RPN[RPN_pointer] == "+")
+					if (**iter == "+")
 						result.push(result.pop() + result.pop());
-					else if (*RPN[RPN_pointer] == "-")
+					else if (**iter == "-")
 						result.push(0.0 - result.pop() + result.pop());
-					else if (*RPN[RPN_pointer] == "--")
+					else if (**iter == "--")
 						result.push(0.0 - result.pop());
-					else if (*RPN[RPN_pointer] == "*")
+					else if (**iter == "*")
 						result.push(result.pop() * result.pop());
-					else if (*RPN[RPN_pointer] == "/")
+					else if (**iter == "/")
 					{
 						double B;
 						if ((B = result.pop()) == 0.0)
@@ -218,9 +207,9 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						else
 							result.push(result.pop() / B);
 					}
-					else if (*RPN[RPN_pointer] == "!")
+					else if (**iter == "!")
 						result.push(Factorial(result.pop()));
-					else if (*RPN[RPN_pointer] == "%")
+					else if (**iter == "%")
 					{
 						double B = result.pop();
 						double A = result.pop();
@@ -229,59 +218,63 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						else
 							throw "[A%B] A or B non integers";
 					}
-					else if (*RPN[RPN_pointer] == "%%")
+					else if (**iter == "%%")
 						result.push(result.pop() / 100.0);
-					else if (*RPN[RPN_pointer] == "^")
+					else if (**iter == "^")
 					{
 						double B = result.pop();
 						double A = result.pop();
 						result.push(pow(A, B));
 					}
-					else if (*RPN[RPN_pointer] == "min")
+					else if (**iter == "min")
 					{
 						double A = result.pop();
 						double B = result.pop();
 						A < B ? result.push(A) : result.push(B);
 					}
-					else if (*RPN[RPN_pointer] == "max")
+					else if (**iter == "max")
 					{
 						double B = result.pop();
 						double A = result.pop();
 						A > B ? result.push(A) : result.push(B);
 					}
-					else if (*RPN[RPN_pointer] == "log")
-						result.push(1.0 / log(result.pop()) * log(result.pop()));
-					else if (*RPN[RPN_pointer] == "lg")
+					else if (**iter == "log")
+					{
+						double B = result.pop();
+						double A = result.pop();
+						result.push(1.0 / log(A) * log(B));
+					}
+					else if (**iter == "lg")
 						result.push(log10(result.pop()));
-					else if (*RPN[RPN_pointer] == "ln")
+					else if (**iter == "ln")
 						result.push(log(result.pop()));
-					else if (*RPN[RPN_pointer] == "sqrt")
+					else if (**iter == "sqrt")
 					{
 						if (result.GetTop() < 0.0)
 							throw "[sqrt(N)] N is negative";
 						result.push(sqrt(result.pop()));
 					}
-					else if (*RPN[RPN_pointer] == "abs")
+					else if (**iter == "abs")
 						result.push(abs(result.pop()));
-					else if (*RPN[RPN_pointer] == "pi")
+					else if (**iter == "pi")
 						result.push(_PI);
-					else if (*RPN[RPN_pointer] == "e")
+					else if (**iter == "e")
 						result.push(_E);
-					else if (*RPN[RPN_pointer] == "ans")
+					else if (**iter == "ans")
 						result.push(answer);
-					else if (*RPN[RPN_pointer] == "rand#")
+					else if (**iter == "rand#")
 						result.push(rand());
-					else if (*RPN[RPN_pointer] == "arcsin")
+					else if (**iter == "arcsin")
 						result.push(GetValue(asin, result.pop()));
-					else if (*RPN[RPN_pointer] == "arccos")
+					else if (**iter == "arccos")
 						result.push(GetValue(acos, result.pop()));
-					else if (*RPN[RPN_pointer] == "arctan")
+					else if (**iter == "arctan")
 						result.push(GetValue(atan, result.pop()));
-					else if (*RPN[RPN_pointer] == "arsinh")
+					else if (**iter == "arsinh")
 						result.push(GetValue(asinh, result.pop()));
-					else if (*RPN[RPN_pointer] == "arcosh")
+					else if (**iter == "arcosh")
 						result.push(GetValue(acosh, result.pop()));
-					else if (*RPN[RPN_pointer] == "artanh")
+					else if (**iter == "artanh")
 						result.push(GetValue(atanh, result.pop()));
 					else
 					{
@@ -290,22 +283,22 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 							n = result.pop();
 						else
 							n = result.pop() * _PI / 180.0;
-						if (*RPN[RPN_pointer] == "sin")
+						if (**iter == "sin")
 							result.push(sin(n));
-						else if (*RPN[RPN_pointer] == "cos")
+						else if (**iter == "cos")
 							result.push(cos(n));
-						else if (*RPN[RPN_pointer] == "tan")
+						else if (**iter == "tan")
 							result.push(tan(n));
-						else if (*RPN[RPN_pointer] == "sinh")
+						else if (**iter == "sinh")
 							result.push(sinh(n));
-						else if (*RPN[RPN_pointer] == "cosh")
+						else if (**iter == "cosh")
 							result.push(cosh(n));
-						else if (*RPN[RPN_pointer] == "tanh")
+						else if (**iter == "tanh")
 							result.push(tanh(n));
 						else
 						{
-							*RPN[RPN_pointer] = "unknown operator: " + *RPN[RPN_pointer];
-							throw RPN[RPN_pointer]->c_str();
+							**iter = "unknown operator: " + **iter;
+							throw (*iter)->c_str();
 						}
 					}
 				}
@@ -317,10 +310,7 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 						throw ERROR_INFORMATION;
 				}
 			}
-			++RPN_pointer;
 		}
-		for (int i = 0; i < MAX_RPN_COUNT; i++)
-			delete RPN[i];
 		answer = result.pop();
 		return true;
 	}
@@ -329,8 +319,6 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		cout << endl;
 		PrintColorfully("ERROR: ", FOREGROUND_RED);
 		PrintColorfully(ERROR_INFORMATION, FOREGROUND_GREEN, true);
-		for (int i = 0; i < MAX_RPN_COUNT; i++)
-			delete RPN[i];
 		return false;
 	}
 }
