@@ -312,6 +312,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 			}
 		}
 		answer = result.pop();
+		for (vector<string*>::const_iterator iter = RPN.begin(); iter < RPN.end(); ++iter)
+			delete *iter;
 		return true;
 	}
 	catch (const char *ERROR_INFORMATION)
@@ -319,6 +321,8 @@ bool Calculate(const string &expression, const bool &isRadian, double &answer)
 		cout << endl;
 		PrintColorfully("ERROR: ", FOREGROUND_RED);
 		PrintColorfully(ERROR_INFORMATION, FOREGROUND_GREEN, true);
+		for (vector<string*>::const_iterator iter = RPN.begin(); iter < RPN.end(); ++iter)
+			delete *iter;
 		return false;
 	}
 }
