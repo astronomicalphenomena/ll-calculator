@@ -386,30 +386,37 @@ bool isRadian = false;
 double answer = 0.0;
 vector<function*> functions;
 int created_count = 0;
-void LoadSettings()
+bool LoadSettings()
 {
 	using namespace rapidjson;
-	FILE *file_pointer = fopen("settings.json", "rb");
-	char readBuffer[65536];
-	FileReadStream is(file_pointer, readBuffer, sizeof(readBuffer));
-	Document document;
-	document.ParseStream(is);
-	fclose(file_pointer);
-	FIXnum = document["FIXnum"].GetInt();
-	isRadian = document["isRadian"].GetBool();
-	answer = document["answer"].GetDouble();
-	created_count = document["functions_count"].GetInt();
-	functions.clear();
-	const Value &_functions = document["functions"];
-	for (int i = 0; i < created_count; ++i)
+	FILE *file_pointer;
+	errno_t isOpened = fopen_s(&file_pointer, "settings.json", "rb");
+	if (isOpened == 0)
 	{
-		function *importing = new function;
-		importing->function_name = _functions[i]["function_name"].GetString();
-		importing->parameter_count = _functions[i]["parameter_count"].GetInt();
-		importing->parameter_name = _functions[i]["parameter_name"].GetString();
-		importing->function_expression = _functions[i]["function_expression"].GetString();
-		functions.push_back(importing);
+		char readBuffer[65536];
+		FileReadStream is(file_pointer, readBuffer, sizeof(readBuffer));
+		Document document;
+		document.ParseStream(is);
+		fclose(file_pointer);
+		FIXnum = document["FIXnum"].GetInt();
+		isRadian = document["isRadian"].GetBool();
+		answer = document["answer"].GetDouble();
+		created_count = document["functions_count"].GetInt();
+		functions.clear();
+		const Value &_functions = document["functions"];
+		for (int i = 0; i < created_count; ++i)
+		{
+			function *importing = new function;
+			importing->function_name = _functions[i]["function_name"].GetString();
+			importing->parameter_count = _functions[i]["parameter_count"].GetInt();
+			importing->parameter_name = _functions[i]["parameter_name"].GetString();
+			importing->function_expression = _functions[i]["function_expression"].GetString();
+			functions.push_back(importing);
+		}
+		return true;
 	}
+	else
+		return false;
 }
 void SaveSettings()
 {
@@ -444,16 +451,25 @@ void SaveSettings()
 	output.EndObject();
 	Document document;
 	document.Parse(settings.GetString());
-	FILE *file_pointer = fopen("settings.json", "wb");
+	FILE *file_pointer;
+	fopen_s(&file_pointer, "settings.json", "wb");
 	char writeBuffer[65536];
 	FileWriteStream os(file_pointer, writeBuffer, sizeof(writeBuffer));
 	Writer<FileWriteStream> writer(os);
 	document.Accept(writer);
 	fclose(file_pointer);
 }
+BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
+{
+	if (CTRL_CLOSE_EVENT == dwCtrlType)
+		SaveSettings();
+	return TRUE;
+}
 int main()
 {
 	srand(time(NULL));
+	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+	LoadSettings();
 	PrintColorfully("Welcome", FOREGROUND_RED | FOREGROUND_INTENSITY);
 	PrintColorfully(" to ", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 	PrintColorfully("Scientific Calculator", FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
@@ -532,7 +548,10 @@ int main()
 				PrintColorfully("NOT FOUND", FOREGROUND_RED, true);
 		}
 		else if (content == "-load")
-			LoadSettings();
+		{
+			if (!LoadSettings())
+				PrintColorfully("settings.json NOT FOUND", FOREGROUND_RED, true);
+		}
 		else if (content == "-save")
 			SaveSettings();
 		else if (content == "-test")
