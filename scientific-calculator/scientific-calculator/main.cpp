@@ -461,89 +461,84 @@ int main()
 	string content;
 	while (cin >> content)
 	{
-		if (content[0] == '-')
+		if (content == "-rad")
+			isRadian = true;
+		else if (content == "-deg")
+			isRadian = false;
+		else if (content == "-fix")
 		{
-			if (content == "-rad")
-				isRadian = true;
-			else if (content == "-deg")
-				isRadian = false;
-			else if (content == "-fix")
-			{
-				PrintColorfully("FIX number? ", FOREGROUND_RED | FOREGROUND_GREEN);
-				cin >> FIXnum;
-				cout << setprecision(FIXnum);
-			}
-			else if (content == "-f")
-			{
-				function *creating = new function;
-				cin >> content;
-				string::size_type pos = 0;
-				for (; content[pos] != '('; ++pos)
-					creating->function_name += content[pos];
-				creating->function_name += "(";
-				++pos;
-				string::size_type first_parameter_pos = pos;
-				for (; content[pos] != ')'; ++pos)
-					if (content[pos] == ',')
-						++creating->parameter_count;
-				++creating->parameter_count;
-				for (; first_parameter_pos != pos; ++first_parameter_pos)
-					if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
-						creating->parameter_name += content[first_parameter_pos];
-				while (content[pos] != '=')
-					++pos;
-				++pos;
-				for (; pos != content.size(); pos++)
-					creating->function_expression += content[pos];
-				creating->function_expression = "(" + creating->function_expression + ")";
-				functions.push_back(creating);
-				++created_count;
-			}
-			else if (content == "-sf")
-			{
-				for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
-				{
-					PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
-					PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully(to_string((*iter)->parameter_count), FOREGROUND_GREEN, true);
-					PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully((*iter)->parameter_name, FOREGROUND_GREEN, true);
-					PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
-					PrintColorfully((*iter)->function_expression, FOREGROUND_GREEN, true);
-					cout << endl;
-				}
-			}
-			else if (content == "-df")
-			{
-				PrintColorfully("function name?", FOREGROUND_RED | FOREGROUND_GREEN);
-				string function_name;
-				cin >> function_name;
-				bool isDeleted = false;
-				for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
-				{
-					if ((*iter)->function_name == function_name)
-					{
-						functions.erase(iter);
-						isDeleted = true;
-						--created_count;
-						break;
-					}
-				}
-				if (!isDeleted)
-					PrintColorfully("NOT FOUND", FOREGROUND_RED, true);
-			}
-			else if (content == "-load")
-				LoadSettings();
-			else if (content == "-save")
-				SaveSettings();
-			else if (content == "-test")
-				isTesting = true;
-			else if (content == "-exit")
-				break;
-			else
-				PrintColorfully("ERROR INSTRUCTION", FOREGROUND_RED, true);
+			PrintColorfully("FIX number? ", FOREGROUND_RED | FOREGROUND_GREEN);
+			cin >> FIXnum;
+			cout << setprecision(FIXnum);
 		}
+		else if (content == "-f")
+		{
+			function *creating = new function;
+			cin >> content;
+			string::size_type pos = 0;
+			for (; content[pos] != '('; ++pos)
+				creating->function_name += content[pos];
+			creating->function_name += "(";
+			++pos;
+			string::size_type first_parameter_pos = pos;
+			for (; content[pos] != ')'; ++pos)
+				if (content[pos] == ',')
+					++creating->parameter_count;
+			++creating->parameter_count;
+			for (; first_parameter_pos != pos; ++first_parameter_pos)
+				if (('A' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'Z') || ('a' <= content[first_parameter_pos] && content[first_parameter_pos] <= 'z'))
+					creating->parameter_name += content[first_parameter_pos];
+			while (content[pos] != '=')
+				++pos;
+			++pos;
+			for (; pos != content.size(); pos++)
+				creating->function_expression += content[pos];
+			creating->function_expression = "(" + creating->function_expression + ")";
+			functions.push_back(creating);
+			++created_count;
+		}
+		else if (content == "-sf")
+		{
+			for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+			{
+				PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(to_string((*iter)->parameter_count), FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->parameter_name, FOREGROUND_GREEN, true);
+				PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->function_expression, FOREGROUND_GREEN, true);
+				cout << endl;
+			}
+		}
+		else if (content == "-df")
+		{
+			PrintColorfully("function name?", FOREGROUND_RED | FOREGROUND_GREEN);
+			string function_name;
+			cin >> function_name;
+			bool isDeleted = false;
+			for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+			{
+				if ((*iter)->function_name == function_name)
+				{
+					functions.erase(iter);
+					isDeleted = true;
+					--created_count;
+					break;
+				}
+			}
+			if (!isDeleted)
+				PrintColorfully("NOT FOUND", FOREGROUND_RED, true);
+		}
+		else if (content == "-load")
+			LoadSettings();
+		else if (content == "-save")
+			SaveSettings();
+		else if (content == "-test")
+			isTesting = true;
+		else if (content == "-exit")
+			break;
 		else
 		{
 			bool isCalculateSuccessfully;
