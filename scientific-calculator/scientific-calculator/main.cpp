@@ -344,20 +344,20 @@ struct function
 			string *parameter_expression = new string[parameter_count];
 			for (int i = 0; i < parameter_count; ++i)
 			{
-				Stack<char> left_parenthesis;
+				int left_parenthesis = 0;
 				while (true)
 				{
 					if (expression[pos] == '(')
 					{
 						parameter_expression[i] += expression[pos];
-						left_parenthesis.push('L');
+						++left_parenthesis;
 					}
-					else if (expression[pos] == ')' && !left_parenthesis.empty())
+					else if (expression[pos] == ')' && left_parenthesis != 0)
 					{
 						parameter_expression[i] += expression[pos];
-						left_parenthesis.pop();
+						--left_parenthesis;
 					}
-					else if ((expression[pos] == ')' || expression[pos] == ',') && left_parenthesis.empty())
+					else if ((expression[pos] == ')' || expression[pos] == ',') && left_parenthesis == 0)
 						break;
 					else
 						parameter_expression[i] += expression[pos];
