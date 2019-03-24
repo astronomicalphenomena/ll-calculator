@@ -434,7 +434,7 @@ void SaveSettings()
 	output.Int(created_count);
 	output.Key("functions");
 	output.StartArray();
-	for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+	for (vector<function*>::const_iterator iter = functions.begin(); iter < functions.end(); ++iter)
 	{
 		output.StartObject();
 		output.Key("function_name");
@@ -515,7 +515,7 @@ int main()
 		}
 		else if (content == "-sf")
 		{
-			for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+			for (vector<function*>::const_iterator iter = functions.begin(); iter < functions.end(); ++iter)
 			{
 				PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
 				PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
@@ -570,7 +570,7 @@ int main()
 					isCalculateSuccessfully = Calculate(expression, isRadian, answer);
 				else
 				{
-					for (vector<function*>::iterator iter = functions.begin(); iter < functions.end(); ++iter)
+					for (vector<function*>::const_iterator iter = functions.begin(); iter < functions.end(); ++iter)
 						(*iter)->ExpanseFunction(expression);
 					if (isTesting)
 						PrintColorfully(expression, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
