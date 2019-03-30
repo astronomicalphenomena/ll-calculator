@@ -475,8 +475,18 @@ int main()
 	PrintColorfully("Scientific Calculator", FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, true);
 	string expression;
 	string content;
-	while (cin >> content)
+	while (true)
 	{
+		content.clear();
+		char input_ch;
+		while (input_ch = getchar())
+		{
+			if (input_ch == '\n')
+				break;
+			else if (input_ch == ' ')
+				input_ch = ',';
+			content += input_ch;
+		}
 		if (content == "-rad")
 			isRadian = true;
 		else if (content == "-deg")

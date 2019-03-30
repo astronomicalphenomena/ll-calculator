@@ -6,8 +6,7 @@ This program uses [RapidJson](https://github.com/Tencent/rapidjson/) to save and
 - **How to get it?**
   - [Download](https://github.com/LuKaderZ/ll-calculator/releases) the latest program or compile the latest code.
 - **How to use it?**
-  - Enter any correct expression and press **Enter** key then it will print the result.<br/>
-  **Please don't enter any spaces,it will let the program stop.**
+  - Enter any correct expression and press **Enter** key then it will print the result.
 
 # Introduction
 ### Supported Operators:
@@ -21,11 +20,11 @@ arsinh() arcosh() artanh()
 min(x,y) max(x,y) logx(y)
 ```
 ### User-defined function:
-| instruction name | function           |
-| ---------------- | ------------------ |
-| -f               | create a function  |
-| -df              | delete a function  |
-| -sf              | show all functions |
+| instruction name |      function      |
+|:----------------:|:------------------:|
+|        -f        | create a function  |
+|       -df        | delete a function  |
+|       -sf        | show all functions |
 
 Functional expression format:***functionName*(*parameterName1*,*parameterName2*...)=*expression***<br/>
 (e.g.):**add(x,y)=x+y**
@@ -39,7 +38,7 @@ Functional expression format:***functionName*(*parameterName1*,*parameterName2*.
 
 ### Other instructions:
 | instruction name |                      function                      |
-| :--------------: | :------------------------------------------------: |
+|:----------------:|:--------------------------------------------------:|
 |       -rad       |                Calculate in radian                 |
 |       -reg       |                Calculate in degree                 |
 |       -fix       |                 Set decimal digits                 |
