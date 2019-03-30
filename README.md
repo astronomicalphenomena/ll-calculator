@@ -38,10 +38,11 @@ Functional expression format:***functionName*(*parameterName1*,*parameterName2*.
 
 ### Other instructions:
 | instruction name |                      function                      |
-|:----------------:|:--------------------------------------------------:|
+| :--------------: | :------------------------------------------------: |
 |       -rad       |                Calculate in radian                 |
 |       -reg       |                Calculate in degree                 |
 |       -fix       |                 Set decimal digits                 |
+|      -sort       |                     Sort data                      |
 |      -load       |                   Load settings                    |
 |      -save       |                   Save settings                    |
 |      -test       | Print test information before it prints the result |

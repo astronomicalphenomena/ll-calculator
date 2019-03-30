@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -523,21 +524,6 @@ int main()
 			functions.push_back(creating);
 			++created_count;
 		}
-		else if (content == "-sf")
-		{
-			for (vector<function*>::const_iterator iter = functions.begin(); iter < functions.end(); ++iter)
-			{
-				PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-				PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
-				PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
-				PrintColorfully(to_string((*iter)->parameter_count), FOREGROUND_GREEN, true);
-				PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
-				PrintColorfully((*iter)->parameter_name, FOREGROUND_GREEN, true);
-				PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
-				PrintColorfully((*iter)->function_expression, FOREGROUND_GREEN, true);
-				cout << endl;
-			}
-		}
 		else if (content == "-df")
 		{
 			PrintColorfully("function name?", FOREGROUND_RED | FOREGROUND_GREEN);
@@ -556,6 +542,43 @@ int main()
 			}
 			if (!isDeleted)
 				PrintColorfully("NOT FOUND", FOREGROUND_RED, true);
+		}
+		else if (content == "-sf")
+		{
+			for (vector<function*>::const_iterator iter = functions.begin(); iter < functions.end(); ++iter)
+			{
+				PrintColorfully("Function Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->function_name, FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Count: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully(to_string((*iter)->parameter_count), FOREGROUND_GREEN, true);
+				PrintColorfully("Parameter Name: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->parameter_name, FOREGROUND_GREEN, true);
+				PrintColorfully("Function Exprssion: ", FOREGROUND_RED | FOREGROUND_GREEN);
+				PrintColorfully((*iter)->function_expression, FOREGROUND_GREEN, true);
+				cout << endl;
+			}
+		}
+		else if (content == "-sort")
+		{
+			vector<double> data;
+			content.clear();
+			while (input_ch = getchar())
+			{
+				if (input_ch == '\n')
+					break;
+				else if (input_ch != ' ')
+					content += input_ch;
+				else if (input_ch == ' ')
+				{
+					data.push_back(stod(content));
+					content.clear();
+				}
+			}
+			data.push_back(stod(content));
+			sort(data.begin(), data.end());
+			for (vector<double>::const_iterator iter = data.begin(); iter < data.end(); ++iter)
+				cout << *iter << " ";
+			cout << endl;
 		}
 		else if (content == "-load")
 		{
